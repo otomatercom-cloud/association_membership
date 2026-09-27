@@ -1,0 +1,20 @@
+<odoo>
+    <menuitem id="menu_association_membership_root" name="Membership" sequence="60"/>
+
+    <menuitem id="menu_association_membership_applications" name="Applications"
+              parent="menu_association_membership_root"
+              action="action_association_membership_application" sequence="10"/>
+    <menuitem id="menu_association_members" name="Members"
+              parent="menu_association_membership_root"
+              action="action_association_member" sequence="20"/>
+    <menuitem id="menu_association_memberships" name="Memberships"
+              parent="menu_association_membership_root"
+              action="action_association_membership" sequence="30"/>
+
+    <menuitem id="menu_association_membership_config" name="Configuration"
+              parent="menu_association_membership_root" sequence="90"
+              groups="group_membership_admin"/>
+    <menuitem id="menu_association_membership_type" name="Membership Types"
+              parent="menu_association_membership_config"
+              action="action_association_membership_type" sequence="10"/>
+</odoo>
