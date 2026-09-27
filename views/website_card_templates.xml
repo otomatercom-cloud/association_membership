@@ -1,5 +1,227 @@
 <odoo>
 
+    <!-- Shared rich "ATM style" digital card design, used by both the portal
+         card page and the public QR-verify page so a scanned card and the
+         portal view always look identical. Expects `member` in scope.
+         All custom classes are prefixed with "ms-" so they never collide
+         with Bootstrap's own .card/.details/.info/.status classes that are
+         already loaded on portal.layout / website.layout pages. -->
+    <template id="ms_digital_card_full">
+        <t t-set="status_map" t-value="{
+            'active': ('#22c55e', '#bbf7d0', 'ACTIVE'),
+            'expired': ('#ef4444', '#fecaca', 'EXPIRED'),
+            'suspended': ('#f59e0b', '#fde68a', 'SUSPENDED'),
+            'cancelled': ('#ef4444', '#fecaca', 'CANCELLED'),
+            'inactive': ('#6b7280', '#e5e7eb', 'NOT YET ACTIVE'),
+        }"/>
+        <t t-set="status_bg" t-value="status_map.get(member.card_status, ('#6b7280', '#e5e7eb', 'UNKNOWN'))[0]"/>
+        <t t-set="status_fg" t-value="status_map.get(member.card_status, ('#6b7280', '#e5e7eb', 'UNKNOWN'))[1]"/>
+        <t t-set="status_label" t-value="status_map.get(member.card_status, ('#6b7280', '#e5e7eb', 'UNKNOWN'))[2]"/>
+        <t t-set="card_year" t-value="member.current_membership_id.start_date.strftime('%Y') if member.current_membership_id.start_date else (member.joining_date.strftime('%Y') if member.joining_date else '')"/>
+
+        <div id="ms_digital_card" style="max-width: 560px; margin: 0 auto;">
+            <style>
+                #ms_digital_card * { box-sizing: border-box; }
+                #ms_digital_card .ms-card {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 24px;
+                    padding: 24px;
+                    color: #fff;
+                    background: linear-gradient(135deg, #102a43 0%, #155e75 52%, #0f766e 100%);
+                    box-shadow: 0 20px 45px rgba(15, 23, 42, .25);
+                }
+                #ms_digital_card .ms-card::before {
+                    content: "";
+                    position: absolute;
+                    width: 260px; height: 260px;
+                    right: -130px; top: -130px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(255,255,255,.16);
+                }
+                #ms_digital_card .ms-card::after {
+                    content: "";
+                    position: absolute;
+                    width: 200px; height: 200px;
+                    left: -110px; bottom: -110px;
+                    border-radius: 50%;
+                    background: rgba(255,255,255,.05);
+                }
+                #ms_digital_card .ms-header {
+                    position: relative; z-index: 2;
+                    display: flex; align-items: center; justify-content: space-between;
+                }
+                #ms_digital_card .ms-brand { display: flex; align-items: center; gap: 12px; }
+                #ms_digital_card .ms-logo {
+                    width: 44px; height: 44px; border-radius: 12px;
+                    display: flex; justify-content: center; align-items: center;
+                    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+                    font-size: 19px; font-weight: 800; flex-shrink: 0;
+                }
+                #ms_digital_card .ms-org-name { font-size: 14px; font-weight: 800; letter-spacing: .4px; }
+                #ms_digital_card .ms-org-sub { margin-top: 3px; font-size: 9px; color: rgba(255,255,255,.65); letter-spacing: 1px; }
+                #ms_digital_card .ms-digital-label { font-size: 9px; letter-spacing: 1.5px; color: rgba(255,255,255,.65); text-align: right; }
+                #ms_digital_card .ms-member { position: relative; z-index: 2; display: flex; gap: 18px; align-items: center; margin-top: 24px; }
+                #ms_digital_card .ms-photo {
+                    width: 88px; height: 106px; object-fit: cover; border-radius: 14px;
+                    border: 2px solid rgba(255,255,255,.6); background: #fff; flex-shrink: 0;
+                }
+                #ms_digital_card .ms-photo-placeholder {
+                    width: 88px; height: 106px; border-radius: 14px;
+                    background: rgba(255,255,255,.15); flex-shrink: 0;
+                }
+                #ms_digital_card .ms-member-info { flex: 1; min-width: 0; }
+                #ms_digital_card .ms-member-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; word-break: break-word; }
+                #ms_digital_card .ms-member-type {
+                    display: inline-block; padding: 5px 11px; border-radius: 20px;
+                    background: rgba(255,255,255,.14); font-size: 10px; font-weight: 600; margin-bottom: 14px;
+                }
+                #ms_digital_card .ms-info { display: grid; grid-template-columns: 100px 1fr; row-gap: 6px; font-size: 11px; }
+                #ms_digital_card .ms-label { color: rgba(255,255,255,.55); }
+                #ms_digital_card .ms-value { font-weight: 600; word-break: break-word; }
+                #ms_digital_card .ms-bottom {
+                    position: relative; z-index: 2; margin-top: 22px;
+                    display: flex; align-items: center; justify-content: space-between;
+                }
+                #ms_digital_card .ms-member-number { font-size: 10px; letter-spacing: 1.2px; color: rgba(255,255,255,.65); font-family: 'Courier New', monospace; }
+                #ms_digital_card .ms-status {
+                    padding: 5px 12px; border-radius: 20px;
+                    font-size: 9px; font-weight: 800; letter-spacing: .6px;
+                }
+                #ms_digital_card .ms-details {
+                    margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+                }
+                #ms_digital_card .ms-detail { background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 4px 14px rgba(15,23,42,.06); }
+                #ms_digital_card .ms-detail small { display: block; font-size: 9px; color: #8491a5; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .3px; }
+                #ms_digital_card .ms-detail strong { font-size: 12px; color: #172033; word-break: break-word; }
+                #ms_digital_card .ms-qr-area {
+                    margin-top: 16px; background: #fff; border-radius: 18px; padding: 16px;
+                    display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 14px rgba(15,23,42,.06);
+                }
+                #ms_digital_card .ms-qr { width: 76px; height: 76px; padding: 4px; border: 1px solid #e5e7eb; border-radius: 10px; flex-shrink: 0; }
+                #ms_digital_card .ms-qr img { width: 100%; height: 100%; }
+                #ms_digital_card .ms-verify h3 { color: #172033; font-size: 14px; margin-bottom: 4px; }
+                #ms_digital_card .ms-verify p { color: #77839a; font-size: 11px; line-height: 1.5; margin: 0; }
+                @media(max-width:600px) {
+                    #ms_digital_card .ms-details { grid-template-columns: repeat(2, 1fr); }
+                    #ms_digital_card .ms-info { grid-template-columns: 85px 1fr; }
+                    #ms_digital_card .ms-member-name { font-size: 19px; }
+                }
+            </style>
+
+            <!-- DIGITAL CARD -->
+            <div class="ms-card">
+                <div class="ms-header">
+                    <div class="ms-brand">
+                        <div class="ms-logo" t-esc="(member.company_id.name or 'A')[0].upper()"/>
+                        <div>
+                            <div class="ms-org-name" t-esc="member.company_id.name or 'Association Membership'"/>
+                            <div class="ms-org-sub">MEMBERSHIP ASSOCIATION</div>
+                        </div>
+                    </div>
+                    <div class="ms-digital-label">DIGITAL<br/>MEMBER CARD</div>
+                </div>
+
+                <div class="ms-member">
+                    <img t-if="member.photo" t-att-src="image_data_uri(member.photo)" class="ms-photo" alt="Member Photo"/>
+                    <div t-else="" class="ms-photo-placeholder"/>
+                    <div class="ms-member-info">
+                        <div class="ms-member-name" t-esc="member.name"/>
+                        <div class="ms-member-type" t-esc="(member.membership_type_id.name or 'MEMBER').upper()"/>
+                        <div class="ms-info">
+                            <div class="ms-label">Member ID</div>
+                            <div class="ms-value" t-esc="member.member_number"/>
+                            <t t-if="member.iqama_number">
+                                <div class="ms-label">Iqama No.</div>
+                                <div class="ms-value" t-esc="member.iqama_number"/>
+                            </t>
+                            <t t-if="member.nationality_id">
+                                <div class="ms-label">Nationality</div>
+                                <div class="ms-value" t-esc="member.nationality_id.name"/>
+                            </t>
+                            <t t-if="member.ksa_province">
+                                <div class="ms-label">KSA Province</div>
+                                <div class="ms-value" t-esc="member.ksa_province"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ms-bottom">
+                    <div class="ms-member-number">
+                        MEMBERSHIP<t t-if="card_year"> &#8226; <t t-esc="card_year"/></t>
+                    </div>
+                    <div class="ms-status" t-attf-style="background: {{status_bg}}33; border: 1px solid {{status_fg}}; color: {{status_fg}};">
+                        &#9679; <t t-esc="status_label"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEMBER DETAILS -->
+            <div class="ms-details">
+                <div class="ms-detail" t-if="member.passport_number">
+                    <small>Passport</small>
+                    <strong t-esc="member.passport_number"/>
+                </div>
+                <div class="ms-detail" t-if="member.whatsapp">
+                    <small>WhatsApp</small>
+                    <strong t-esc="member.whatsapp"/>
+                </div>
+                <div class="ms-detail" t-if="member.mobile">
+                    <small>Call</small>
+                    <strong t-esc="member.mobile"/>
+                </div>
+                <div class="ms-detail" t-if="member.ksa_area">
+                    <small>KSA Area</small>
+                    <strong t-esc="member.ksa_area"/>
+                </div>
+                <div class="ms-detail" t-if="member.state_id">
+                    <small>State</small>
+                    <strong t-esc="member.state_id.name"/>
+                </div>
+                <div class="ms-detail" t-if="member.city">
+                    <small>Place</small>
+                    <strong t-esc="member.city"/>
+                </div>
+                <div class="ms-detail" t-if="member.date_of_birth">
+                    <small>Date of Birth</small>
+                    <strong t-esc="member.date_of_birth" t-options="{'widget': 'date'}"/>
+                </div>
+                <div class="ms-detail" t-if="member.blood_group">
+                    <small>Blood Group</small>
+                    <strong t-esc="dict(member._fields['blood_group'].selection).get(member.blood_group)"/>
+                </div>
+                <div class="ms-detail" t-if="member.job">
+                    <small>Job</small>
+                    <strong t-esc="member.job"/>
+                </div>
+                <div class="ms-detail" t-if="member.email">
+                    <small>Email</small>
+                    <strong t-esc="member.email"/>
+                </div>
+                <div class="ms-detail" t-if="member.current_membership_id.start_date">
+                    <small>Valid From</small>
+                    <strong t-esc="member.current_membership_id.start_date" t-options="{'widget': 'date'}"/>
+                </div>
+                <div class="ms-detail" t-if="member.current_membership_id.expiry_date">
+                    <small>Valid Until</small>
+                    <strong t-esc="member.current_membership_id.expiry_date" t-options="{'widget': 'date'}"/>
+                </div>
+            </div>
+
+            <!-- QR VERIFICATION -->
+            <div class="ms-qr-area" t-if="member.card_verify_url">
+                <div class="ms-qr">
+                    <img t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=160&amp;height=160" alt="QR Code"/>
+                </div>
+                <div class="ms-verify">
+                    <h3>Verify Membership</h3>
+                    <p>Scan the QR code to verify the member's identity and current membership status.</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <template id="membership_verify_page" name="Membership Card Verification">
         <t t-call="website.layout">
             <div id="ms_verify_page" class="container my-5" style="max-width: 640px;">
@@ -14,68 +236,7 @@
                     </div>
                 </t>
 
-                <t t-if="member">
-                    <t t-set="status_map" t-value="{
-                        'active': ('success', 'Active Member'),
-                        'expired': ('danger', 'Membership Expired'),
-                        'suspended': ('warning', 'Membership Suspended'),
-                        'cancelled': ('danger', 'Membership Cancelled'),
-                        'inactive': ('secondary', 'Not Yet Active'),
-                    }"/>
-                    <t t-set="status_color" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[0]"/>
-                    <t t-set="status_label" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[1]"/>
-
-                    <div class="card shadow-sm" style="overflow:hidden;">
-                        <div t-attf-style="background: linear-gradient(135deg, #5b2a86 0%, #7c3aed 45%, #2563eb 100%); color:#fff; padding: 24px 16px; text-align:center;">
-                            <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
-                                 class="rounded-circle mb-2" style="width:100px;height:100px;object-fit:cover;border:3px solid rgba(255,255,255,0.7);"/>
-                            <h3 class="mb-0" t-esc="member.name"/>
-                            <div class="small" style="opacity:0.9;" t-esc="member.member_number"/>
-                        </div>
-                        <div t-attf-class="text-center py-2 text-bg-{{status_color}}">
-                            <i t-attf-class="fa {{ 'fa-check-circle' if member.card_status == 'active' else 'fa-times-circle' }} me-1"/>
-                            <strong t-esc="status_label"/>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-borderless table-sm mb-0">
-                                <tr>
-                                    <td class="text-muted" style="width:40%;">Membership Type</td>
-                                    <td><strong t-esc="member.membership_type_id.name"/></td>
-                                </tr>
-                                <tr t-if="member.job">
-                                    <td class="text-muted">Job</td>
-                                    <td t-esc="member.job"/>
-                                </tr>
-                                <tr t-if="member.city or member.state_id">
-                                    <td class="text-muted">Place</td>
-                                    <td>
-                                        <t t-if="member.city" t-esc="member.city"/>
-                                        <t t-if="member.city and member.state_id">, </t>
-                                        <t t-if="member.state_id" t-esc="member.state_id.name"/>
-                                    </td>
-                                </tr>
-                                <tr t-if="member.mobile">
-                                    <td class="text-muted">Mobile</td>
-                                    <td t-esc="member.mobile"/>
-                                </tr>
-                                <tr t-if="member.email">
-                                    <td class="text-muted">Email</td>
-                                    <td t-esc="member.email"/>
-                                </tr>
-                                <tr t-if="member.current_membership_id.start_date">
-                                    <td class="text-muted">Valid</td>
-                                    <td>
-                                        <span t-esc="member.current_membership_id.start_date"/> to
-                                        <span t-esc="member.current_membership_id.expiry_date"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <p class="text-muted text-center small mt-3">
-                        Identity document numbers and postal address are never shown on this public page.
-                    </p>
-                </t>
+                <t t-if="member" t-call="association_membership.ms_digital_card_full"/>
             </div>
         </t>
     </template>

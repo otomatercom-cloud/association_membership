@@ -81,6 +81,7 @@
                     </group>
                     <group>
                         <group string="KSA Residency">
+                            <field name="nationality_id"/>
                             <field name="iqama_number"/>
                             <field name="passport_number"/>
                             <field name="ksa_province"/>

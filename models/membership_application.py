@@ -356,6 +356,7 @@ class AssociationMembershipApplication(models.Model):
                 'gender': self.gender,
                 'blood_group': self.blood_group,
                 'job': self.job,
+                'nationality_id': self.nationality_id.id,
                 'occupation': self.occupation,
                 'company_name': self.company_name,
                 'designation': self.designation,

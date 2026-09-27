@@ -74,6 +74,8 @@ class AssociationMember(models.Model):
     company_name = fields.Char(string='Company / Organization')
     designation = fields.Char(string='Designation')
 
+    nationality_id = fields.Many2one('res.country', string='Nationality')
+
     # KSA (Saudi Arabia) residency details
     iqama_number = fields.Char(string='Iqama Number', tracking=True)
     passport_number = fields.Char(string='Passport Number', tracking=True)
