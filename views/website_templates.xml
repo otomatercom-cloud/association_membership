@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="membership_apply_page" name="Membership Application Form">
+        <t t-call="website.layout">
+            <div id="ms_apply_page" class="ms-apply-page">
+                <style>
+                    #ms_apply_page { --ms-accent: #0b6e4f; --ms-accent-light: #e6f4ef; }
+                    #ms_apply_page .ms-hero { background: linear-gradient(135deg, var(--ms-accent), #0a4d38); color: #fff; padding: 48px 0; }
+                    #ms_apply_page .ms-hero h1 { font-weight: 700; margin-bottom: 8px; }
+                    #ms_apply_page .ms-card { background: #fff; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.08); padding: 32px; margin-top: -40px; margin-bottom: 48px; }
+                    #ms_apply_page .ms-steps { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 28px; }
+                    #ms_apply_page .ms-step-dot { flex: 1 1 auto; min-width: 90px; text-align: center; font-size: .78rem; color: #9aa5a1; cursor: pointer; padding-bottom: 10px; border-bottom: 3px solid #e5e5e5; transition: all .15s ease; }
+                    #ms_apply_page .ms-step-dot .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #e5e5e5; color: #fff; font-weight: 600; margin-right: 4px; }
+                    #ms_apply_page .ms-step-dot-active { color: var(--ms-accent); border-color: var(--ms-accent); font-weight: 600; }
+                    #ms_apply_page .ms-step-dot-active .num { background: var(--ms-accent); }
+                    #ms_apply_page .ms-step-dot-done .num { background: #7fb8a4; }
+                    #ms_apply_page .ms-step-pane h3 { color: var(--ms-accent); font-weight: 700; margin-bottom: 4px; }
+                    #ms_apply_page .ms-step-pane .ms-step-sub { color: #6c757d; margin-bottom: 20px; font-size: .92rem; }
+                    #ms_apply_page label.ms-label { font-weight: 600; font-size: .88rem; margin-bottom: 4px; }
+                    #ms_apply_page .ms-req::after { content: " *"; color: #d9534f; }
+                    #ms_apply_page .ms-nav-btns { display: flex; justify-content: space-between; margin-top: 28px; padding-top: 20px; border-top: 1px solid #eee; }
+                    #ms_apply_page .btn-ms-accent { background: var(--ms-accent); border-color: var(--ms-accent); color: #fff; }
+                    #ms_apply_page .btn-ms-accent:hover { background: #095a40; border-color: #095a40; color: #fff; }
+                    #ms_apply_page .ms-alert-general { border-left: 4px solid #d9534f; }
+                    @media (max-width: 576px) { #ms_apply_page .ms-card { padding: 20px; margin-top: -24px; } #ms_apply_page .ms-step-dot { min-width: 70px; } }
+                </style>
+
+                <div class="ms-hero">
+                    <div class="container text-center">
+                        <h1>Association Membership Application</h1>
+                        <p class="mb-0">Join our community of Indian expatriates in Saudi Arabia — apply below.</p>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="ms-card">
+
+                        <t t-if="errors.get('duplicate')">
+                            <div class="alert alert-warning ms-alert-general" role="alert">
+                                <t t-esc="errors['duplicate']"/>
+                            </div>
+                        </t>
+                        <t t-if="errors.get('general')">
+                            <div class="alert alert-danger ms-alert-general" role="alert">
+                                <t t-esc="errors['general']"/>
+                            </div>
+                        </t>
+
+                        <ul class="ms-steps">
+                            <li class="ms-step-dot" data-idx="0"><span class="num">1</span>Personal</li>
+                            <li class="ms-step-dot" data-idx="1"><span class="num">2</span>KSA Residency</li>
+                            <li class="ms-step-dot" data-idx="2"><span class="num">3</span>Address in India</li>
+                            <li class="ms-step-dot" data-idx="3"><span class="num">4</span>Professional</li>
+                            <li class="ms-step-dot" data-idx="4"><span class="num">5</span>Identity &amp; Emergency</li>
+                            <li class="ms-step-dot" data-idx="5"><span class="num">6</span>Membership</li>
+                            <li class="ms-step-dot" data-idx="6"><span class="num">7</span>Review</li>
+                        </ul>
+
+                        <form id="membership_apply_form" action="/membership/apply/submit" method="post"
+                              enctype="multipart/form-data" novalidate="novalidate">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                            <!-- STEP 1: Personal Information -->
+                            <div class="ms-step-pane" data-step="0">
+                                <h3>Personal Information</h3>
+                                <p class="ms-step-sub">Tell us a little about yourself.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="ms-label ms-req" for="applicant_name">Full Name</label>
+                                        <input type="text" id="applicant_name" name="applicant_name" required="required"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('applicant_name') else ''}"
+                                               t-att-value="post.get('applicant_name', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('applicant_name')"><t t-esc="errors['applicant_name']"/></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="photo">Passport Size Photo</label>
+                                        <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('photo') else ''}"/>
+                                        <div class="invalid-feedback" t-if="errors.get('photo')"><t t-esc="errors['photo']"/></div>
+                                        <small class="text-muted">JPG or PNG, max 5 MB.</small>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="ms-label ms-req" for="date_of_birth">Date of Birth</label>
+                                        <input type="date" id="date_of_birth" name="date_of_birth" required="required"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('date_of_birth') else ''}"
+                                               t-att-value="post.get('date_of_birth', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('date_of_birth')"><t t-esc="errors['date_of_birth']"/></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label ms-req" for="gender">Gender</label>
+                                        <select id="gender" name="gender" required="required"
+                                                t-attf-class="form-select #{'is-invalid' if errors.get('gender') else ''}">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="gender_selection" t-as="g">
+                                                <option t-att-value="g[0]" t-att-selected="post.get('gender') == g[0]"><t t-esc="g[1]"/></option>
+                                            </t>
+                                        </select>
+                                        <div class="invalid-feedback" t-if="errors.get('gender')"><t t-esc="errors['gender']"/></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="blood_group">Blood Group</label>
+                                        <select id="blood_group" name="blood_group" class="form-select">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="blood_groups" t-as="bg">
+                                                <option t-att-value="bg[0]" t-att-selected="post.get('blood_group') == bg[0]"><t t-esc="bg[1]"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="ms-label ms-req" for="mobile">Mobile Number (Call)</label>
+                                        <input type="tel" id="mobile" name="mobile" required="required"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('mobile') else ''}"
+                                               t-att-value="post.get('mobile', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('mobile')"><t t-esc="errors['mobile']"/></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="whatsapp">Mobile Number (WhatsApp)</label>
+                                        <input type="tel" id="whatsapp" name="whatsapp"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('whatsapp') else ''}"
+                                               t-att-value="post.get('whatsapp', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('whatsapp')"><t t-esc="errors['whatsapp']"/></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="ms-label ms-req" for="email">Email</label>
+                                        <input type="email" id="email" name="email" required="required"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('email') else ''}"
+                                               t-att-value="post.get('email', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('email')"><t t-esc="errors['email']"/></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="ms-label" for="nationality_id">Nationality</label>
+                                        <select id="nationality_id" name="nationality_id" class="form-select">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="countries" t-as="c">
+                                                <option t-att-value="c.id" t-att-selected="post.get('nationality_id') == str(c.id)"><t t-esc="c.name"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="ms-label" for="job">Job</label>
+                                        <input type="text" id="job" name="job" class="form-control" t-att-value="post.get('job', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2: KSA Residency -->
+                            <div class="ms-step-pane d-none" data-step="1">
+                                <h3>KSA Residency</h3>
+                                <p class="ms-step-sub">Your residency details in Saudi Arabia.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="iqama_number">Iqama Number</label>
+                                        <input type="text" id="iqama_number" name="iqama_number" class="form-control" t-att-value="post.get('iqama_number', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="passport_number">Passport Number</label>
+                                        <input type="text" id="passport_number" name="passport_number" class="form-control" t-att-value="post.get('passport_number', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="ksa_province">KSA Province</label>
+                                        <input type="text" id="ksa_province" name="ksa_province" class="form-control" t-att-value="post.get('ksa_province', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="ksa_area">KSA Area</label>
+                                        <input type="text" id="ksa_area" name="ksa_area" class="form-control" t-att-value="post.get('ksa_area', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 3: Address in India -->
+                            <div class="ms-step-pane d-none" data-step="2">
+                                <h3>Address in India</h3>
+                                <p class="ms-step-sub">Your home address in India.</p>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="ms-label ms-req" for="house_address">Address in India</label>
+                                        <input type="text" id="house_address" name="house_address" required="required"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('house_address') else ''}"
+                                               t-att-value="post.get('house_address', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('house_address')"><t t-esc="errors['house_address']"/></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="street">Street</label>
+                                        <input type="text" id="street" name="street" class="form-control" t-att-value="post.get('street', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="district">District</label>
+                                        <input type="text" id="district" name="district" class="form-control" t-att-value="post.get('district', '')"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="place">Place</label>
+                                        <input type="text" id="place" name="place" class="form-control" t-att-value="post.get('place', '')"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label ms-req" for="state_id">State</label>
+                                        <select id="state_id" name="state_id" required="required"
+                                                t-attf-class="form-select #{'is-invalid' if errors.get('state_id') else ''}">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="states" t-as="s">
+                                                <option t-att-value="s.id" t-att-selected="post.get('state_id') == str(s.id)"><t t-esc="s.name"/></option>
+                                            </t>
+                                        </select>
+                                        <div class="invalid-feedback" t-if="errors.get('state_id')"><t t-esc="errors['state_id']"/></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label ms-req" for="pin_code">PIN Code</label>
+                                        <input type="text" id="pin_code" name="pin_code" required="required" inputmode="numeric"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('pin_code') else ''}"
+                                               t-att-value="post.get('pin_code', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('pin_code')"><t t-esc="errors['pin_code']"/></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 4: Professional Information -->
+                            <div class="ms-step-pane d-none" data-step="3">
+                                <h3>Professional Information</h3>
+                                <p class="ms-step-sub">Optional, but helps us know our members better.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="occupation">Occupation</label>
+                                        <input type="text" id="occupation" name="occupation" class="form-control" t-att-value="post.get('occupation', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="company_name">Company / Organization</label>
+                                        <input type="text" id="company_name" name="company_name" class="form-control" t-att-value="post.get('company_name', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="designation">Designation</label>
+                                        <input type="text" id="designation" name="designation" class="form-control" t-att-value="post.get('designation', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="work_address">Work Address</label>
+                                        <input type="text" id="work_address" name="work_address" class="form-control" t-att-value="post.get('work_address', '')"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 5: Identity & Emergency Contact -->
+                            <div class="ms-step-pane d-none" data-step="4">
+                                <h3>Identity &amp; Emergency Contact</h3>
+                                <p class="ms-step-sub">A document upload is optional here - your Iqama/Passport numbers are usually enough.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="id_proof_type">ID Proof Type</label>
+                                        <select id="id_proof_type" name="id_proof_type" class="form-select">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="id_proof_types" t-as="idt">
+                                                <option t-att-value="idt[0]" t-att-selected="post.get('id_proof_type') == idt[0]"><t t-esc="idt[1]"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="id_proof_number">ID Proof Number</label>
+                                        <input type="text" id="id_proof_number" name="id_proof_number" class="form-control" t-att-value="post.get('id_proof_number', '')"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="id_proof_document">ID Proof Document</label>
+                                        <input type="file" id="id_proof_document" name="id_proof_document" accept=".jpg,.jpeg,.png,.pdf"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('id_proof_document') else ''}"/>
+                                        <div class="invalid-feedback" t-if="errors.get('id_proof_document')"><t t-esc="errors['id_proof_document']"/></div>
+                                        <small class="text-muted">JPG, PNG or PDF, max 5 MB.</small>
+                                    </div>
+                                    <div class="col-12"><hr/></div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="emergency_contact_name">Emergency Contact Name</label>
+                                        <input type="text" id="emergency_contact_name" name="emergency_contact_name" class="form-control" t-att-value="post.get('emergency_contact_name', '')"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="emergency_contact_relationship">Relationship</label>
+                                        <input type="text" id="emergency_contact_relationship" name="emergency_contact_relationship" class="form-control" t-att-value="post.get('emergency_contact_relationship', '')"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="ms-label" for="emergency_contact_mobile">Emergency Contact Mobile</label>
+                                        <input type="tel" id="emergency_contact_mobile" name="emergency_contact_mobile"
+                                               t-attf-class="form-control #{'is-invalid' if errors.get('emergency_contact_mobile') else ''}"
+                                               t-att-value="post.get('emergency_contact_mobile', '')"/>
+                                        <div class="invalid-feedback" t-if="errors.get('emergency_contact_mobile')"><t t-esc="errors['emergency_contact_mobile']"/></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 6: Membership -->
+                            <div class="ms-step-pane d-none" data-step="5">
+                                <h3>Membership</h3>
+                                <p class="ms-step-sub">Choose the membership you're applying for.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="ms-label ms-req" for="membership_type_id">Membership Type</label>
+                                        <select id="membership_type_id" name="membership_type_id" required="required"
+                                                t-attf-class="form-select #{'is-invalid' if errors.get('membership_type_id') else ''}">
+                                            <option value="">Select...</option>
+                                            <t t-foreach="membership_types" t-as="mtype">
+                                                <option t-att-value="mtype.id" t-att-selected="post.get('membership_type_id') == str(mtype.id)">
+                                                    <t t-esc="mtype.name"/> — <t t-esc="mtype.currency_id.symbol"/><t t-esc="'%.2f' % mtype.membership_fee"/>
+                                                    / <t t-esc="mtype.duration"/> <t t-esc="mtype.duration_unit"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <div class="invalid-feedback" t-if="errors.get('membership_type_id')"><t t-esc="errors['membership_type_id']"/></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="membership_category">Membership Category</label>
+                                        <input type="text" id="membership_category" name="membership_category" class="form-control" t-att-value="post.get('membership_category', '')"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-label" for="referral_reference">Referral Name / Member ID</label>
+                                        <input type="text" id="referral_reference" name="referral_reference" class="form-control" t-att-value="post.get('referral_reference', '')"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="ms-label" for="additional_info">Additional Information</label>
+                                        <textarea id="additional_info" name="additional_info" class="form-control" rows="3"><t t-esc="post.get('additional_info', '')"/></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 7: Review & Submit -->
+                            <div class="ms-step-pane d-none" data-step="6">
+                                <h3>Review &amp; Submit</h3>
+                                <p class="ms-step-sub">Use "Back" to review or correct any earlier step.</p>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="declare_accurate" name="declare_accurate" value="1"
+                                           t-att-checked="'checked' if post.get('declare_accurate') else None"/>
+                                    <label class="form-check-label" for="declare_accurate">
+                                        I declare that the information provided above is true and accurate to the best of my knowledge.
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback d-block" t-if="errors.get('declare_accurate')"><t t-esc="errors['declare_accurate']"/></div>
+                            </div>
+
+                            <div class="ms-nav-btns">
+                                <button type="button" id="ms_back_btn" class="btn btn-outline-secondary d-none">Back</button>
+                                <div class="ms-flex-spacer"/>
+                                <button type="button" id="ms_next_btn" class="btn btn-ms-accent ms-ms-next">Next</button>
+                                <button type="submit" id="ms_submit_btn" class="btn btn-ms-accent d-none">Submit Application</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    (function () {
+                        var panes = Array.prototype.slice.call(document.querySelectorAll('.ms-step-pane'));
+                        var dots = Array.prototype.slice.call(document.querySelectorAll('.ms-step-dot'));
+                        var current = 0;
+
+                        function showStep(idx) {
+                            panes.forEach(function (p, i) { p.classList.toggle('d-none', i !== idx); });
+                            dots.forEach(function (d, i) {
+                                d.classList.toggle('ms-step-dot-active', i === idx);
+                                d.classList.toggle('ms-step-dot-done', i &lt; idx);
+                            });
+                            var backBtn = document.getElementById('ms_back_btn');
+                            var nextBtn = document.getElementById('ms_next_btn');
+                            var submitBtn = document.getElementById('ms_submit_btn');
+                            if (backBtn) { backBtn.classList.toggle('d-none', idx === 0); }
+                            if (nextBtn) { nextBtn.classList.toggle('d-none', idx === panes.length - 1); }
+                            if (submitBtn) { submitBtn.classList.toggle('d-none', idx !== panes.length - 1); }
+                            current = idx;
+                            var form = document.getElementById('membership_apply_form');
+                            if (form) { window.scrollTo({top: form.offsetTop - 20, behavior: 'smooth'}); }
+                        }
+
+                        function paneValid(idx) {
+                            var inputs = panes[idx].querySelectorAll('input, select, textarea');
+                            for (var i = 0; i &lt; inputs.length; i++) {
+                                if (inputs[i].reportValidity &amp;&amp; !inputs[i].reportValidity()) { return false; }
+                            }
+                            return true;
+                        }
+
+                        document.addEventListener('click', function (ev) {
+                            var target = ev.target;
+                            if (target &amp;&amp; target.id === 'ms_next_btn') {
+                                ev.preventDefault();
+                                if (paneValid(current)) { showStep(Math.min(current + 1, panes.length - 1)); }
+                            } else if (target &amp;&amp; target.id === 'ms_back_btn') {
+                                ev.preventDefault();
+                                showStep(Math.max(current - 1, 0));
+                            } else if (target &amp;&amp; target.closest &amp;&amp; target.closest('.ms-step-dot')) {
+                                var dot = target.closest('.ms-step-dot');
+                                var idx = parseInt(dot.getAttribute('data-idx'), 10);
+                                if (idx &lt;= current) { showStep(idx); }
+                            }
+                        });
+
+                        if (panes.length) {
+                            var errorIdx = -1;
+                            panes.forEach(function (p, i) {
+                                if (errorIdx === -1 &amp;&amp; p.querySelector('.is-invalid')) { errorIdx = i; }
+                            });
+                            showStep(errorIdx >= 0 ? errorIdx : 0);
+                        }
+                    })();
+                </script>
+            </div>
+        </t>
+    </template>
+
+    <template id="membership_apply_thanks" name="Membership Application Received">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <t t-if="application">
+                    <div class="mb-4">
+                        <span class="badge bg-success" style="font-size: 1rem;">Application Received</span>
+                    </div>
+                    <h1 class="mb-3">Thank you, <t t-esc="application.applicant_name"/>!</h1>
+                    <p class="lead">
+                        Your membership application has been submitted successfully.
+                    </p>
+                    <p>
+                        Your application reference number is
+                        <strong><t t-esc="application.name"/></strong>.
+                        Please keep it for future correspondence.
+                    </p>
+                    <p class="text-muted">
+                        Our team will verify your application and contact you with the next steps.
+                    </p>
+                </t>
+                <t t-else="">
+                    <h1 class="mb-3">Thank you!</h1>
+                    <p class="lead">Your membership application has been submitted successfully.</p>
+                </t>
+                <a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+            </div>
+        </t>
+    </template>
+
+</odoo>

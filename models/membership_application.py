@@ -89,7 +89,14 @@ class AssociationMembershipApplication(models.Model):
         required=True, tracking=True,
     )
     membership_category = fields.Char(string='Membership Category')
-    referral_member_id = fields.Many2one('association.member', string='Referral / Existing Member')
+    referral_member_id = fields.Many2one(
+        'association.member', string='Referral / Existing Member',
+        help='Linked by staff during verification, once the referral is confirmed.',
+    )
+    referral_reference = fields.Char(
+        string='Referral Name / Member ID',
+        help='Free-text name or Member ID entered by the applicant on the public form.',
+    )
     additional_info = fields.Text(string='Additional Information')
 
     # Application meta

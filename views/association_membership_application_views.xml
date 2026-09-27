@@ -67,6 +67,7 @@
                         <group string="Membership">
                             <field name="membership_type_id"/>
                             <field name="membership_category"/>
+                            <field name="referral_reference" readonly="1"/>
                             <field name="referral_member_id"/>
                             <field name="application_date"/>
                             <field name="payment_status" readonly="1"/>
