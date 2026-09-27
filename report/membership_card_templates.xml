@@ -15,56 +15,80 @@
         <field name="dpi">96</field>
     </record>
 
+    <!-- NOTE: wkhtmltopdf (the engine Odoo's qweb-pdf reports shell out to) does
+         NOT reliably render CSS flexbox / CSS grid - a card built with
+         display:flex renders almost blank (only <img> tags and borders show).
+         This template deliberately avoids flex/grid entirely and uses plain
+         block flow + position:absolute + tables instead, which wkhtmltopdf
+         has always supported. Don't reintroduce display:flex/grid here. -->
     <template id="report_membership_card_document">
         <div class="ms_card" t-attf-style="
-            width: 86mm; height: 54mm; box-sizing: border-box; padding: 4.5mm;
-            font-family: 'Helvetica Neue', Arial, sans-serif; color: #ffffff;
-            background: linear-gradient(135deg, #5b2a86 0%, #7c3aed 45%, #2563eb 100%);
+            width: 86mm; height: 54mm; box-sizing: border-box;
+            font-family: Arial, sans-serif; color: #ffffff;
+            background: #155e75;
+            background: -webkit-linear-gradient(135deg, #102a43 0%, #155e75 52%, #0f766e 100%);
+            background: linear-gradient(135deg, #102a43 0%, #155e75 52%, #0f766e 100%);
             border-radius: 3.5mm; position: relative; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: space-between;
         ">
-            <!-- decorative translucent circles for a bit of visual depth -->
+            <!-- decorative translucent circles -->
             <div style="position:absolute; top:-14mm; right:-10mm; width:34mm; height:34mm; border-radius:50%; background: rgba(255,255,255,0.08);"/>
             <div style="position:absolute; bottom:-16mm; left:-12mm; width:30mm; height:30mm; border-radius:50%; background: rgba(255,255,255,0.06);"/>
 
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; position:relative;">
-                <div style="font-size: 9px; font-weight:bold; letter-spacing: 0.5px; text-transform: uppercase; max-width: 45mm;"
+            <!-- header: org name (left) + membership type badge (absolute, right) -->
+            <div style="position:relative; padding: 3.5mm 4mm 0 4mm;">
+                <div style="font-size: 8px; font-weight:bold; letter-spacing: 0.4px; text-transform: uppercase; max-width: 46mm; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
                      t-esc="member.company_id.name or 'Association Membership'"/>
-                <div style="font-size: 6.5px; background: rgba(255,255,255,0.18); padding: 1mm 2mm; border-radius: 2mm; text-transform: uppercase; letter-spacing: 0.5px;"
-                     t-esc="member.membership_type_id.name"/>
+                <div style="position:absolute; top:3.5mm; right:4mm; font-size: 6px; background: rgba(255,255,255,0.18); padding: 1mm 2mm; border-radius: 2mm; text-transform: uppercase; letter-spacing: 0.4px; max-width: 26mm; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                     t-esc="member.membership_type_id.name or 'Member'"/>
             </div>
 
-            <div style="display:flex; align-items:center; position:relative; margin-top: 1mm;">
-                <!-- gold "chip" -->
-                <div style="width: 7mm; height: 5.5mm; border-radius: 1mm; background: linear-gradient(135deg, #f6d365, #d4a017); margin-right: 3mm; flex-shrink:0;"/>
+            <!-- member row: photo positioned absolute, text block offset with margin-left (no flex needed) -->
+            <div style="position:relative; margin: 2.5mm 4mm 0 4mm; min-height: 16mm;">
                 <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
-                     style="width: 13mm; height: 13mm; border-radius: 50%; object-fit: cover; border: 0.5mm solid rgba(255,255,255,0.7); margin-right: 3mm; flex-shrink:0;"/>
-                <div t-else="" style="width: 13mm; height: 13mm; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 3mm; flex-shrink:0;"/>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size: 12.5px; font-weight: bold; letter-spacing: 0.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                     style="position:absolute; top:0; left:0; width: 13mm; height: 16mm; border-radius: 2mm; object-fit: cover; border: 0.4mm solid rgba(255,255,255,0.6);"/>
+                <div t-else="" style="position:absolute; top:0; left:0; width: 13mm; height: 16mm; border-radius: 2mm; background: rgba(255,255,255,0.15);"/>
+
+                <div style="margin-left: 16mm;">
+                    <div style="font-size: 11px; font-weight: bold; letter-spacing: 0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
                          t-esc="member.name"/>
-                    <div style="font-size: 7.5px; opacity: 0.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        <t t-if="member.job" t-esc="member.job"/>
-                        <t t-if="member.job and member.city"> &#8226; </t>
-                        <t t-if="member.city" t-esc="member.city"/>
-                    </div>
+                    <table style="font-size: 6.3px; margin-top: 1mm; border-collapse: collapse; width: 100%;">
+                        <tr>
+                            <td style="color: rgba(255,255,255,.6); padding-right: 2mm; white-space:nowrap;">Member ID</td>
+                            <td style="font-weight:bold;" t-esc="member.member_number"/>
+                        </tr>
+                        <tr t-if="member.iqama_number">
+                            <td style="color: rgba(255,255,255,.6); padding-right: 2mm; white-space:nowrap;">Iqama No.</td>
+                            <td t-esc="member.iqama_number"/>
+                        </tr>
+                        <tr t-if="member.nationality_id">
+                            <td style="color: rgba(255,255,255,.6); padding-right: 2mm; white-space:nowrap;">Nationality</td>
+                            <td t-esc="member.nationality_id.name"/>
+                        </tr>
+                        <tr t-if="not member.nationality_id and (member.job or member.city)">
+                            <td style="color: rgba(255,255,255,.6); padding-right: 2mm; white-space:nowrap;">Job / Place</td>
+                            <td>
+                                <t t-if="member.job" t-esc="member.job"/>
+                                <t t-if="member.job and member.city"> &#8226; </t>
+                                <t t-if="member.city" t-esc="member.city"/>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; position:relative;">
-                <div>
-                    <div style="font-size: 10px; font-family: 'Courier New', monospace; letter-spacing: 1.5px;"
-                         t-esc="member.member_number"/>
-                    <div style="font-size: 6.5px; opacity: 0.85;" t-if="member.current_membership_id.expiry_date">
-                        VALID THRU <span t-esc="member.current_membership_id.expiry_date"/>
-                    </div>
+            <!-- bottom row: member number + valid-thru (left block), QR (absolute, right) -->
+            <div style="position:absolute; left:4mm; bottom:2.5mm; right:20mm;">
+                <div style="font-size: 9px; font-family: 'Courier New', monospace; letter-spacing: 1.2px;"
+                     t-esc="member.member_number"/>
+                <div style="font-size: 6px; opacity: 0.85; margin-top: 0.5mm;" t-if="member.current_membership_id.expiry_date">
+                    VALID THRU <t t-esc="member.current_membership_id.expiry_date"/>
                 </div>
-                <div style="text-align:center;">
-                    <img t-if="member.card_verify_url"
-                         t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=140&amp;height=140"
-                         style="width: 14mm; height: 14mm; background: white; padding: 0.5mm; border-radius: 1mm;"/>
-                    <div style="font-size: 5.5px; opacity: 0.85; margin-top: 0.5mm;">SCAN TO VERIFY</div>
-                </div>
+            </div>
+            <div style="position:absolute; right:4mm; bottom:2mm; text-align:center;">
+                <img t-if="member.card_verify_url"
+                     t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=140&amp;height=140"
+                     style="width: 13mm; height: 13mm; background: white; padding: 0.5mm; border-radius: 1mm;"/>
+                <div style="font-size: 5px; opacity: 0.85; margin-top: 0.3mm;">SCAN TO VERIFY</div>
             </div>
         </div>
     </template>
