@@ -17,3 +17,4 @@ access_association_membership_payment_admin,association.membership.payment.admin
 access_association_member_portal,association.member.portal,model_association_member,base.group_portal,1,0,0,0
 access_association_membership_portal,association.membership.portal,model_association_membership,base.group_portal,1,0,0,0
 access_association_membership_payment_portal,association.membership.payment.portal,model_association_membership_payment,base.group_portal,1,0,0,0
+access_association_membership_type_portal,association.membership.type.portal,model_association_membership_type,base.group_portal,1,0,0,0
