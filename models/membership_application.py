@@ -260,7 +260,7 @@ class AssociationMembershipApplication(models.Model):
             partner = self.env['res.partner'].create({
                 'name': self.applicant_name,
                 'email': self.email,
-                'mobile': self.mobile,
+                'phone': self.mobile,
                 'street': self.house_address,
                 'city': self.place,
                 'state_id': self.state_id.id,
@@ -281,6 +281,7 @@ class AssociationMembershipApplication(models.Model):
             partner = self._find_or_create_partner()
             member = self.env['association.member'].create({
                 'partner_id': partner.id,
+                'mobile': self.mobile,
                 'whatsapp': self.whatsapp,
                 'date_of_birth': self.date_of_birth,
                 'gender': self.gender,

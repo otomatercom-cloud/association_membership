@@ -35,7 +35,10 @@ class AssociationMember(models.Model):
     # directly from the Member form (standard Odoo related+store pattern).
     name = fields.Char(related='partner_id.name', string='Full Name', store=True, readonly=False)
     email = fields.Char(related='partner_id.email', string='Email', store=True, readonly=False)
-    mobile = fields.Char(related='partner_id.mobile', string='Mobile Number (Call)', store=True, readonly=False)
+    # NOT related to partner_id: this Odoo 19 instance's res.partner has no
+    # 'mobile' field (only 'phone') - confirmed by a real install error.
+    # Stored independently here, same pattern as 'whatsapp' below.
+    mobile = fields.Char(string='Mobile Number (Call)')
     whatsapp = fields.Char(string='Mobile Number (WhatsApp)')
     photo = fields.Image(related='partner_id.image_1920', string='Passport Size Photo', store=True, readonly=False)
     street = fields.Char(related='partner_id.street', string='Address in India', store=True, readonly=False)
