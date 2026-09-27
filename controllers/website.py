@@ -265,3 +265,16 @@ class AssociationMembershipWebsite(http.Controller):
         return request.render('association_membership.membership_apply_thanks', {
             'application': application,
         })
+
+    @http.route('/membership/verify/<string:token>', type='http', auth='public', website=True, sitemap=False)
+    def membership_verify(self, token, **kwargs):
+        """Public digital-card verification page. Looks the member up by
+        their unguessable card_token (never by id/member_number, which are
+        sequential and easy to enumerate) and shows only what a verifier
+        needs - never mobile, address, Iqama/Passport or any other PII.
+        """
+        member = request.env['association.member'].sudo().search(
+            [('card_token', '=', token)], limit=1) if token else request.env['association.member']
+        return request.render('association_membership.membership_verify_page', {
+            'member': member,
+        })

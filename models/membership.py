@@ -107,6 +107,8 @@ class AssociationMembership(models.Model):
                 'activation_date': fields.Datetime.now(),
             })
             rec.member_id.status = 'active'
+            if rec.member_id.digital_card_enabled:
+                rec.member_id._ensure_card_token()
 
     def action_suspend(self):
         for rec in self:

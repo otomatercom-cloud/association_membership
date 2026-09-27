@@ -1,0 +1,52 @@
+<odoo>
+
+    <template id="membership_verify_page" name="Membership Card Verification">
+        <t t-call="website.layout">
+            <div id="ms_verify_page" class="container my-5" style="max-width: 640px;">
+                <t t-if="not member">
+                    <div class="text-center py-5">
+                        <i class="fa fa-exclamation-triangle fa-3x text-warning mb-3"/>
+                        <h2>Card Not Recognized</h2>
+                        <p class="text-muted">
+                            This verification link is invalid or has expired. Please ask the cardholder
+                            for a fresh card, or contact the association directly.
+                        </p>
+                    </div>
+                </t>
+
+                <t t-if="member">
+                    <t t-set="status_map" t-value="{
+                        'active': ('success', 'Active Member'),
+                        'expired': ('danger', 'Membership Expired'),
+                        'suspended': ('warning', 'Membership Suspended'),
+                        'cancelled': ('danger', 'Membership Cancelled'),
+                        'inactive': ('secondary', 'Not Yet Active'),
+                    }"/>
+                    <t t-set="status_color" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[0]"/>
+                    <t t-set="status_label" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[1]"/>
+
+                    <div class="card shadow-sm">
+                        <div t-attf-class="card-header text-bg-{{status_color}} text-center py-3">
+                            <i t-attf-class="fa {{ 'fa-check-circle' if member.card_status == 'active' else 'fa-times-circle' }} fa-2x mb-2 d-block"/>
+                            <h4 class="mb-0" t-esc="status_label"/>
+                        </div>
+                        <div class="card-body text-center">
+                            <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
+                                 class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;"/>
+                            <h3 t-esc="member.name"/>
+                            <p class="text-muted mb-1" t-esc="member.member_number"/>
+                            <p class="mb-1"><strong t-esc="member.membership_type_id.name"/></p>
+                            <p class="text-muted mb-0" t-if="member.current_membership_id.expiry_date">
+                                Valid Through: <span t-esc="member.current_membership_id.expiry_date"/>
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-muted text-center small mt-3">
+                        This page only confirms membership status. No contact or identity documents are shown here.
+                    </p>
+                </t>
+            </div>
+        </t>
+    </template>
+
+</odoo>

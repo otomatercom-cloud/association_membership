@@ -1,0 +1,72 @@
+<odoo>
+    <record id="paperformat_membership_card" model="report.paperformat">
+        <field name="name">Membership Card (ID-1)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">54</field>
+        <field name="page_width">86</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <template id="report_membership_card_document">
+        <div class="ms_card" t-attf-style="
+            width: 86mm; height: 54mm; box-sizing: border-box; padding: 4mm;
+            font-family: Arial, Helvetica, sans-serif; font-size: 9px; color: #222;
+            border: 1px solid #ccc; display: flex; flex-direction: column;
+        ">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #ddd; padding-bottom: 2mm; margin-bottom: 2mm;">
+                <strong style="font-size: 11px; text-transform: uppercase;" t-esc="member.company_id.name or 'Association Membership'"/>
+                <span style="font-size: 8px; color: #888;">Digital Membership Card</span>
+            </div>
+            <div style="display:flex; flex: 1;">
+                <div style="width: 20mm; margin-right: 3mm;">
+                    <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
+                         style="width: 20mm; height: 24mm; object-fit: cover; border: 1px solid #ccc;"/>
+                    <div t-else="" style="width: 20mm; height: 24mm; border: 1px solid #ccc; background: #f2f2f2;"/>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 12px; font-weight: bold;" t-esc="member.name"/>
+                    <div>Member ID: <strong t-esc="member.member_number"/></div>
+                    <div t-esc="member.membership_type_id.name"/>
+                    <div t-if="member.current_membership_id.start_date">
+                        Valid: <span t-esc="member.current_membership_id.start_date"/>
+                        to <span t-esc="member.current_membership_id.expiry_date"/>
+                    </div>
+                </div>
+                <div style="width: 18mm; text-align: center;">
+                    <img t-if="member.card_verify_url"
+                         t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=140&amp;height=140"
+                         style="width: 18mm; height: 18mm;"/>
+                    <div style="font-size: 6px; color: #888;">Scan to verify</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_membership_card">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="member">
+                <t t-call="association_membership.report_membership_card_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_membership_card" model="ir.actions.report">
+        <field name="name">Digital Membership Card</field>
+        <field name="model">association.member</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">association_membership.report_membership_card</field>
+        <field name="report_file">association_membership.report_membership_card</field>
+        <field name="print_report_name">'Membership Card - %s' % (object.member_number or '')</field>
+        <field name="paperformat_id" ref="paperformat_membership_card"/>
+        <field name="binding_model_id" ref="model_association_member"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

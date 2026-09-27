@@ -30,11 +30,23 @@
                             class="btn-primary" invisible="status != 'suspended'"/>
                     <button name="action_cancel" string="Cancel Membership" type="object"
                             invisible="status == 'cancelled'"/>
+                    <button name="action_grant_portal_access" string="Grant Portal Access" type="object"
+                            class="btn-secondary" invisible="has_portal_access"/>
+                    <button name="action_print_card" string="Print Digital Card" type="object"
+                            class="btn-secondary" invisible="not digital_card_enabled or status not in ('active', 'suspended', 'expired')"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,active,expired,suspended,cancelled"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payments" type="object" class="oe_stat_button" icon="fa-money">
+                            <field name="payment_count" widget="statinfo" string="Payments"/>
+                        </button>
+                    </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="Portal Access" bg_color="text-bg-success" invisible="not has_portal_access"/>
                     <field name="active" invisible="1"/>
+                    <field name="has_portal_access" invisible="1"/>
+                    <field name="digital_card_enabled" invisible="1"/>
                     <field name="photo" widget="image" class="oe_avatar"/>
                     <div class="oe_title">
                         <label for="name"/>
@@ -58,6 +70,11 @@
                             <field name="membership_start_date" readonly="1"/>
                             <field name="membership_expiry_date" readonly="1"/>
                             <field name="user_id"/>
+                        </group>
+                        <group string="Digital Card" invisible="not digital_card_enabled">
+                            <field name="card_status" readonly="1"/>
+                            <field name="card_issued_date" readonly="1"/>
+                            <field name="card_verify_url" widget="url" readonly="1"/>
                         </group>
                     </group>
                     <group>

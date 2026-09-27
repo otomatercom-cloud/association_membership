@@ -1,0 +1,257 @@
+<odoo>
+
+    <template id="portal_my_home_membership" name="Show Membership in Portal"
+              inherit_id="portal.portal_my_home" customize_show="True" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="membership_count" t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/base/static/img/main_partner-image.png'"/>
+                <t t-set="title">Membership</t>
+                <t t-set="url" t-value="'/my/membership'"/>
+                <t t-set="text">View your membership status, card and payment history.</t>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_membership" name="My Membership">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div id="ms_portal_page">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">My Membership</h2>
+                    <a href="/my/membership/payments" class="btn btn-outline-primary">
+                        View Payment History
+                    </a>
+                </div>
+
+                <t t-if="not member">
+                    <div class="alert alert-info" role="status">
+                        We don't have a membership record linked to your account yet. If you've already
+                        applied, please allow some time for verification, or contact us for help.
+                    </div>
+                </t>
+
+                <t t-if="member">
+                    <div class="row">
+                        <div class="col-12 col-lg-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Member Profile</h5>
+                                    <table class="table table-borderless table-sm mb-0">
+                                        <tr>
+                                            <td class="text-muted">Member ID</td>
+                                            <td><strong t-esc="member.member_number"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Name</td>
+                                            <td t-esc="member.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Email</td>
+                                            <td t-esc="member.email"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Mobile</td>
+                                            <td t-esc="member.mobile"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Membership Type</td>
+                                            <td t-esc="member.membership_type_id.name"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Status</td>
+                                            <td>
+                                                <span t-attf-class="badge text-bg-{{ 'success' if member.status == 'active' else ('warning' if member.status == 'suspended' else 'secondary') }}"
+                                                      t-esc="dict(member._fields['status'].selection).get(member.status)"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Current Membership</h5>
+                                    <t t-if="membership">
+                                        <table class="table table-borderless table-sm mb-0">
+                                            <tr>
+                                                <td class="text-muted">Membership No.</td>
+                                                <td><strong t-esc="membership.name"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Start Date</td>
+                                                <td t-esc="membership.start_date"/>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Expiry Date</td>
+                                                <td t-esc="membership.expiry_date"/>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Fee</td>
+                                                <td t-esc="membership.fee" t-options="{'widget': 'monetary', 'display_currency': membership.currency_id}"/>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Payment Status</td>
+                                                <td>
+                                                    <span t-attf-class="badge text-bg-{{ 'success' if membership.payment_status == 'paid' else 'warning' }}"
+                                                          t-esc="dict(membership._fields['payment_status'].selection).get(membership.payment_status)"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted mb-0">
+                                            You don't have an active membership at the moment.
+                                        </p>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Digital Membership Card</h5>
+                            <t t-if="member.digital_card_enabled and member.status in ('active', 'suspended', 'expired')">
+                                <p class="text-muted">View your card with its QR verification code, or download it as a PDF.</p>
+                                <a href="/my/membership/card" class="btn btn-primary">View Digital Card</a>
+                            </t>
+                            <t t-else="">
+                                <p class="text-muted mb-0">
+                                    Your digital membership card will appear here once your membership type
+                                    supports it and your membership is active.
+                                </p>
+                            </t>
+                        </div>
+                    </div>
+
+                    <t t-if="membership_history">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Membership History</h5>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Membership No.</th>
+                                            <th>Type</th>
+                                            <th>Start</th>
+                                            <th>Expiry</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="membership_history" t-as="m">
+                                            <td t-esc="m.name"/>
+                                            <td t-esc="m.membership_type_id.name"/>
+                                            <td t-esc="m.start_date"/>
+                                            <td t-esc="m.expiry_date"/>
+                                            <td t-esc="dict(m._fields['state'].selection).get(m.state)"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_membership_card" name="My Digital Membership Card">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div id="ms_portal_card_page" class="container" style="max-width: 480px;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Digital Membership Card</h2>
+                    <a href="/my/membership" class="btn btn-outline-secondary">Back to Membership</a>
+                </div>
+
+                <t t-if="not member or not member.digital_card_enabled or member.status not in ('active', 'suspended', 'expired')">
+                    <div class="alert alert-info" role="status">
+                        Your digital card isn't available yet. It appears here once your membership type
+                        supports it and your membership is active.
+                    </div>
+                </t>
+
+                <t t-if="member and member.digital_card_enabled and member.status in ('active', 'suspended', 'expired')">
+                    <div class="card shadow-sm text-center">
+                        <div class="card-body">
+                            <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
+                                 class="rounded-circle mb-3" style="width:110px;height:110px;object-fit:cover;"/>
+                            <h4 t-esc="member.name"/>
+                            <p class="text-muted mb-1" t-esc="member.member_number"/>
+                            <p class="mb-1"><strong t-esc="member.membership_type_id.name"/></p>
+                            <p class="text-muted mb-3" t-if="member.current_membership_id.expiry_date">
+                                Valid Through: <span t-esc="member.current_membership_id.expiry_date"/>
+                            </p>
+                            <img t-if="member.card_verify_url"
+                                 t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=180&amp;height=180"
+                                 style="width:180px;height:180px;"/>
+                            <p class="text-muted small mt-2 mb-0">Scan to verify this card</p>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <a t-attf-href="/report/pdf/association_membership.report_membership_card/#{member.id}"
+                               class="btn btn-primary" target="_blank">
+                                <i class="fa fa-download me-1"/> Download as PDF
+                            </a>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_membership_payments" name="My Membership Payments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="False"/>
+            <div id="ms_portal_payments_page">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Payment History</h2>
+                    <a href="/my/membership" class="btn btn-outline-secondary">Back to Membership</a>
+                </div>
+
+                <t t-if="not payments">
+                    <div class="alert alert-info" role="status">
+                        No payments recorded yet.
+                    </div>
+                </t>
+
+                <t t-if="payments">
+                    <div class="card">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                    <th>Purpose</th>
+                                    <th>Method</th>
+                                    <th class="text-end">Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="payments" t-as="payment">
+                                    <td t-esc="payment.name"/>
+                                    <td t-esc="payment.payment_date"/>
+                                    <td t-esc="dict(payment._fields['payment_purpose'].selection).get(payment.payment_purpose)"/>
+                                    <td t-esc="dict(payment._fields['payment_method'].selection).get(payment.payment_method)"/>
+                                    <td class="text-end" t-esc="payment.total_amount"
+                                        t-options="{'widget': 'monetary', 'display_currency': payment.currency_id}"/>
+                                    <td>
+                                        <span t-attf-class="badge text-bg-{{ 'success' if payment.state == 'confirmed' else ('danger' if payment.state in ('failed', 'cancelled') else 'warning') }}"
+                                              t-esc="dict(payment._fields['state'].selection).get(payment.state)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="o_portal_pager text-center mt-3">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+</odoo>

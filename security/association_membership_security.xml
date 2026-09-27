@@ -57,5 +57,30 @@
             <field name="model_id" ref="model_association_membership_payment"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
+
+        <!-- Portal (Phase 4): a portal user may only ever see their own
+             member/membership/payment records. These rules only apply to
+             base.group_portal (via the groups field), so Staff/Manager/Admin
+             access is untouched. -->
+        <record id="rule_member_portal" model="ir.rule">
+            <field name="name">Member: portal sees own record only</field>
+            <field name="model_id" ref="model_association_member"/>
+            <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
+
+        <record id="rule_membership_portal" model="ir.rule">
+            <field name="name">Membership: portal sees own record only</field>
+            <field name="model_id" ref="model_association_membership"/>
+            <field name="domain_force">[('member_id.partner_id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
+
+        <record id="rule_membership_payment_portal" model="ir.rule">
+            <field name="name">Membership Payment: portal sees own record only</field>
+            <field name="model_id" ref="model_association_membership_payment"/>
+            <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
     </data>
 </odoo>
