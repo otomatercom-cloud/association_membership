@@ -25,24 +25,55 @@
                     <t t-set="status_color" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[0]"/>
                     <t t-set="status_label" t-value="status_map.get(member.card_status, ('secondary', 'Unknown'))[1]"/>
 
-                    <div class="card shadow-sm">
-                        <div t-attf-class="card-header text-bg-{{status_color}} text-center py-3">
-                            <i t-attf-class="fa {{ 'fa-check-circle' if member.card_status == 'active' else 'fa-times-circle' }} fa-2x mb-2 d-block"/>
-                            <h4 class="mb-0" t-esc="status_label"/>
-                        </div>
-                        <div class="card-body text-center">
+                    <div class="card shadow-sm" style="overflow:hidden;">
+                        <div t-attf-style="background: linear-gradient(135deg, #5b2a86 0%, #7c3aed 45%, #2563eb 100%); color:#fff; padding: 24px 16px; text-align:center;">
                             <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
-                                 class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;"/>
-                            <h3 t-esc="member.name"/>
-                            <p class="text-muted mb-1" t-esc="member.member_number"/>
-                            <p class="mb-1"><strong t-esc="member.membership_type_id.name"/></p>
-                            <p class="text-muted mb-0" t-if="member.current_membership_id.expiry_date">
-                                Valid Through: <span t-esc="member.current_membership_id.expiry_date"/>
-                            </p>
+                                 class="rounded-circle mb-2" style="width:100px;height:100px;object-fit:cover;border:3px solid rgba(255,255,255,0.7);"/>
+                            <h3 class="mb-0" t-esc="member.name"/>
+                            <div class="small" style="opacity:0.9;" t-esc="member.member_number"/>
+                        </div>
+                        <div t-attf-class="text-center py-2 text-bg-{{status_color}}">
+                            <i t-attf-class="fa {{ 'fa-check-circle' if member.card_status == 'active' else 'fa-times-circle' }} me-1"/>
+                            <strong t-esc="status_label"/>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless table-sm mb-0">
+                                <tr>
+                                    <td class="text-muted" style="width:40%;">Membership Type</td>
+                                    <td><strong t-esc="member.membership_type_id.name"/></td>
+                                </tr>
+                                <tr t-if="member.job">
+                                    <td class="text-muted">Job</td>
+                                    <td t-esc="member.job"/>
+                                </tr>
+                                <tr t-if="member.city or member.state_id">
+                                    <td class="text-muted">Place</td>
+                                    <td>
+                                        <t t-if="member.city" t-esc="member.city"/>
+                                        <t t-if="member.city and member.state_id">, </t>
+                                        <t t-if="member.state_id" t-esc="member.state_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="member.mobile">
+                                    <td class="text-muted">Mobile</td>
+                                    <td t-esc="member.mobile"/>
+                                </tr>
+                                <tr t-if="member.email">
+                                    <td class="text-muted">Email</td>
+                                    <td t-esc="member.email"/>
+                                </tr>
+                                <tr t-if="member.current_membership_id.start_date">
+                                    <td class="text-muted">Valid</td>
+                                    <td>
+                                        <span t-esc="member.current_membership_id.start_date"/> to
+                                        <span t-esc="member.current_membership_id.expiry_date"/>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                     <p class="text-muted text-center small mt-3">
-                        This page only confirms membership status. No contact or identity documents are shown here.
+                        Identity document numbers and postal address are never shown on this public page.
                     </p>
                 </t>
             </div>

@@ -175,19 +175,26 @@
                 </t>
 
                 <t t-if="member and member.digital_card_enabled and member.status in ('active', 'suspended', 'expired')">
-                    <div class="card shadow-sm text-center">
-                        <div class="card-body">
+                    <div class="card shadow-sm text-center" style="overflow:hidden; border-radius: 16px;">
+                        <div t-attf-style="background: linear-gradient(135deg, #5b2a86 0%, #7c3aed 45%, #2563eb 100%); color:#fff; padding: 28px 16px;">
                             <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
-                                 class="rounded-circle mb-3" style="width:110px;height:110px;object-fit:cover;"/>
-                            <h4 t-esc="member.name"/>
-                            <p class="text-muted mb-1" t-esc="member.member_number"/>
-                            <p class="mb-1"><strong t-esc="member.membership_type_id.name"/></p>
+                                 class="rounded-circle mb-2" style="width:100px;height:100px;object-fit:cover;border:3px solid rgba(255,255,255,0.7);"/>
+                            <h4 class="mb-0" t-esc="member.name"/>
+                            <div class="small mb-1" style="opacity:0.9; font-family: 'Courier New', monospace; letter-spacing: 1px;" t-esc="member.member_number"/>
+                            <span class="badge bg-light text-dark" t-esc="member.membership_type_id.name"/>
+                            <div class="small mt-2" style="opacity:0.85;">
+                                <t t-if="member.job" t-esc="member.job"/>
+                                <t t-if="member.job and member.city"> &#8226; </t>
+                                <t t-if="member.city" t-esc="member.city"/>
+                            </div>
+                        </div>
+                        <div class="card-body">
                             <p class="text-muted mb-3" t-if="member.current_membership_id.expiry_date">
-                                Valid Through: <span t-esc="member.current_membership_id.expiry_date"/>
+                                Valid Through: <strong t-esc="member.current_membership_id.expiry_date"/>
                             </p>
                             <img t-if="member.card_verify_url"
                                  t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=180&amp;height=180"
-                                 style="width:180px;height:180px;"/>
+                                 style="width:160px;height:160px;"/>
                             <p class="text-muted small mt-2 mb-0">Scan to verify this card</p>
                         </div>
                         <div class="card-footer bg-white">

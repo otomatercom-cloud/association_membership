@@ -17,34 +17,53 @@
 
     <template id="report_membership_card_document">
         <div class="ms_card" t-attf-style="
-            width: 86mm; height: 54mm; box-sizing: border-box; padding: 4mm;
-            font-family: Arial, Helvetica, sans-serif; font-size: 9px; color: #222;
-            border: 1px solid #ccc; display: flex; flex-direction: column;
+            width: 86mm; height: 54mm; box-sizing: border-box; padding: 4.5mm;
+            font-family: 'Helvetica Neue', Arial, sans-serif; color: #ffffff;
+            background: linear-gradient(135deg, #5b2a86 0%, #7c3aed 45%, #2563eb 100%);
+            border-radius: 3.5mm; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
         ">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #ddd; padding-bottom: 2mm; margin-bottom: 2mm;">
-                <strong style="font-size: 11px; text-transform: uppercase;" t-esc="member.company_id.name or 'Association Membership'"/>
-                <span style="font-size: 8px; color: #888;">Digital Membership Card</span>
+            <!-- decorative translucent circles for a bit of visual depth -->
+            <div style="position:absolute; top:-14mm; right:-10mm; width:34mm; height:34mm; border-radius:50%; background: rgba(255,255,255,0.08);"/>
+            <div style="position:absolute; bottom:-16mm; left:-12mm; width:30mm; height:30mm; border-radius:50%; background: rgba(255,255,255,0.06);"/>
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; position:relative;">
+                <div style="font-size: 9px; font-weight:bold; letter-spacing: 0.5px; text-transform: uppercase; max-width: 45mm;"
+                     t-esc="member.company_id.name or 'Association Membership'"/>
+                <div style="font-size: 6.5px; background: rgba(255,255,255,0.18); padding: 1mm 2mm; border-radius: 2mm; text-transform: uppercase; letter-spacing: 0.5px;"
+                     t-esc="member.membership_type_id.name"/>
             </div>
-            <div style="display:flex; flex: 1;">
-                <div style="width: 20mm; margin-right: 3mm;">
-                    <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
-                         style="width: 20mm; height: 24mm; object-fit: cover; border: 1px solid #ccc;"/>
-                    <div t-else="" style="width: 20mm; height: 24mm; border: 1px solid #ccc; background: #f2f2f2;"/>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 12px; font-weight: bold;" t-esc="member.name"/>
-                    <div>Member ID: <strong t-esc="member.member_number"/></div>
-                    <div t-esc="member.membership_type_id.name"/>
-                    <div t-if="member.current_membership_id.start_date">
-                        Valid: <span t-esc="member.current_membership_id.start_date"/>
-                        to <span t-esc="member.current_membership_id.expiry_date"/>
+
+            <div style="display:flex; align-items:center; position:relative; margin-top: 1mm;">
+                <!-- gold "chip" -->
+                <div style="width: 7mm; height: 5.5mm; border-radius: 1mm; background: linear-gradient(135deg, #f6d365, #d4a017); margin-right: 3mm; flex-shrink:0;"/>
+                <img t-if="member.photo" t-att-src="image_data_uri(member.photo)"
+                     style="width: 13mm; height: 13mm; border-radius: 50%; object-fit: cover; border: 0.5mm solid rgba(255,255,255,0.7); margin-right: 3mm; flex-shrink:0;"/>
+                <div t-else="" style="width: 13mm; height: 13mm; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 3mm; flex-shrink:0;"/>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size: 12.5px; font-weight: bold; letter-spacing: 0.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                         t-esc="member.name"/>
+                    <div style="font-size: 7.5px; opacity: 0.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <t t-if="member.job" t-esc="member.job"/>
+                        <t t-if="member.job and member.city"> &#8226; </t>
+                        <t t-if="member.city" t-esc="member.city"/>
                     </div>
                 </div>
-                <div style="width: 18mm; text-align: center;">
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; position:relative;">
+                <div>
+                    <div style="font-size: 10px; font-family: 'Courier New', monospace; letter-spacing: 1.5px;"
+                         t-esc="member.member_number"/>
+                    <div style="font-size: 6.5px; opacity: 0.85;" t-if="member.current_membership_id.expiry_date">
+                        VALID THRU <span t-esc="member.current_membership_id.expiry_date"/>
+                    </div>
+                </div>
+                <div style="text-align:center;">
                     <img t-if="member.card_verify_url"
                          t-attf-src="/report/barcode/QR/#{member.card_verify_url}?width=140&amp;height=140"
-                         style="width: 18mm; height: 18mm;"/>
-                    <div style="font-size: 6px; color: #888;">Scan to verify</div>
+                         style="width: 14mm; height: 14mm; background: white; padding: 0.5mm; border-radius: 1mm;"/>
+                    <div style="font-size: 5.5px; opacity: 0.85; margin-top: 0.5mm;">SCAN TO VERIFY</div>
                 </div>
             </div>
         </div>
