@@ -1,5 +1,6 @@
 import base64
 import secrets
+import string
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -270,10 +271,43 @@ class AssociationMember(models.Model):
             rec.membership_ids.filtered(lambda m: m.state in ('active', 'suspended')).action_cancel(
                 reason=_('Member cancelled.'))
 
+    @api.model
+    def _generate_portal_password(self, length=10):
+        """Generate a random password guaranteed to contain an uppercase
+        letter, a lowercase letter and a digit, using `secrets` (not
+        `random`) so it's not guessable.
+        """
+        alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits
+        while True:
+            pwd = ''.join(secrets.choice(alphabet) for _ in range(length))
+            if (any(c.isupper() for c in pwd)
+                    and any(c.islower() for c in pwd)
+                    and any(c.isdigit() for c in pwd)):
+                return pwd
+
+    def _send_portal_credentials_email(self, login, password):
+        self.ensure_one()
+        body_html = _(
+            '<p>Dear %(name)s,</p>'
+            '<p>Your portal account for %(member_number)s has been created. You can now log in '
+            'to view your membership, payments and digital card.</p>'
+            '<p><strong>Login:</strong> %(login)s<br/><strong>Password:</strong> %(password)s</p>'
+            '<p>For security, please log in and change this password from your profile as soon as possible.</p>'
+        ) % {'name': self.name, 'member_number': self.member_number, 'login': login, 'password': password}
+        self.env['mail.mail'].sudo().create({
+            'subject': _('Your Portal Access - %s') % self.member_number,
+            'body_html': body_html,
+            'email_to': self.partner_id.email,
+            'auto_delete': False,
+        }).send()
+
     def action_grant_portal_access(self):
-        """Create a portal user for this member's contact and email them an
-        invite to set their own password, so they can log in to /my/membership.
-        Idempotent: a member who already has a user account is left alone.
+        """Create a portal user for this member's contact with an
+        auto-generated password (rather than relying on Odoo's email-invite
+        flow, which needs outgoing mail configured) and email the
+        credentials to the member. Idempotent: a member who already has a
+        user account is left alone. The generated password is also shown
+        to the staff member on screen, in case outgoing mail isn't set up.
         """
         self.ensure_one()
         if self.user_id:
@@ -293,14 +327,48 @@ class AssociationMember(models.Model):
                 ) % self.partner_id.email)
             self.user_id = existing_user.id
             return True
+
         portal_group = self.env.ref('base.group_portal')
+        password = self._generate_portal_password()
         user = self.env['res.users'].sudo().with_context(no_reset_password=True).create({
             'name': self.partner_id.name,
             'login': self.partner_id.email,
             'email': self.partner_id.email,
             'partner_id': self.partner_id.id,
+            'password': password,
             'group_ids': [(6, 0, [portal_group.id])],
         })
-        user.sudo().action_reset_password()
         self.user_id = user.id
-        return True
+
+        mail_sent = False
+        try:
+            self._send_portal_credentials_email(self.partner_id.email, password)
+            mail_sent = True
+        except Exception:
+            mail_sent = False
+        self.message_post(body=_(
+            'Portal access granted for login %(login)s.%(mail_status)s'
+        ) % {
+            'login': self.partner_id.email,
+            'mail_status': _(' Credentials emailed to the member.') if mail_sent
+            else _(' Could not send the credentials email - share the password shown on screen with the member directly.'),
+        })
+
+        message = _(
+            'Portal account created.\nLogin: %(login)s\nPassword: %(password)s'
+        ) % {'login': self.partner_id.email, 'password': password}
+        if mail_sent:
+            message += _('\n\nThis password has also been emailed to the member.')
+        else:
+            message += _('\n\nThe credentials email could not be sent (check outgoing mail setup) - '
+                          'please share this password with the member yourself.')
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Portal Access Granted'),
+                'message': message,
+                'sticky': True,
+                'type': 'success',
+            },
+        }

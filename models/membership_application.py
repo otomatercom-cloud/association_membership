@@ -319,12 +319,24 @@ class AssociationMembershipApplication(models.Model):
         return action
 
     def _find_or_create_partner(self):
+        """Resolve the res.partner behind this application - either the one
+        already linked, one found by email, or a freshly created one - and
+        make sure the applicant's uploaded photo always ends up on it.
+
+        NOTE: previously this returned immediately when `self.partner_id`
+        was already set, which meant an applicant's uploaded photo was
+        never copied across at all for that case (a real reported bug:
+        "photo uploaded but not showing in card and member details").
+        Also previously only copied the photo onto an EXISTING partner if
+        that partner had none yet, so a re-uploaded/updated photo was
+        silently ignored. Both are fixed below: the photo sync now runs
+        for every path (already-linked, found-by-email, or newly created)
+        and always applies when the application has a photo.
+        """
         self.ensure_one()
-        if self.partner_id:
-            return self.partner_id
-        partner = self.env['res.partner']
-        if self.email:
-            partner = partner.search([('email', '=', self.email)], limit=1)
+        partner = self.partner_id
+        if not partner and self.email:
+            partner = self.env['res.partner'].search([('email', '=', self.email)], limit=1)
         if not partner:
             partner = self.env['res.partner'].create({
                 'name': self.applicant_name,
@@ -338,7 +350,7 @@ class AssociationMembershipApplication(models.Model):
                 'company_type': 'person',
                 'image_1920': self.photo,
             })
-        elif self.photo and not partner.image_1920:
+        elif self.photo:
             partner.image_1920 = self.photo
         self.partner_id = partner
         return partner
@@ -373,6 +385,19 @@ class AssociationMembershipApplication(models.Model):
                 'application_id': self.id,
             })
             self.member_id = member.id
+        else:
+            # Member already exists (e.g. a re-submitted/renewal application
+            # linked back to the same member) - still make sure a freshly
+            # uploaded photo on THIS application reaches the partner/member.
+            partner = self._find_or_create_partner()
+
+        # Defensive safety net: `member.photo` is related+store to
+        # `partner_id.image_1920`, which should already be in sync after
+        # `_find_or_create_partner()` above, but force it explicitly so a
+        # freshly uploaded photo is never left showing blank on the member
+        # record or the digital card because of any compute-timing edge case.
+        if partner.image_1920 and member.photo != partner.image_1920:
+            member.photo = partner.image_1920
 
         if not self.membership_id:
             membership = self.env['association.membership'].create({
