@@ -130,6 +130,18 @@ class AssociationMembershipApplication(models.Model):
     partner_id = fields.Many2one('res.partner', string='Contact', copy=False)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
 
+    # Payment (Phase 3)
+    currency_id = fields.Many2one(
+        related='membership_type_id.currency_id', string='Currency', store=True, readonly=True,
+    )
+    payment_ids = fields.One2many(
+        'association.membership.payment', 'application_id', string='Payments',
+    )
+    payment_count = fields.Integer(string='Payment Count', compute='_compute_payment_totals')
+    amount_due = fields.Monetary(string='Amount Due', currency_field='currency_id', compute='_compute_payment_totals')
+    amount_paid = fields.Monetary(string='Amount Paid', currency_field='currency_id', compute='_compute_payment_totals')
+    balance_due = fields.Monetary(string='Balance Due', currency_field='currency_id', compute='_compute_payment_totals')
+
     _application_number_uniq = models.Constraint(
         'unique(name, company_id)',
         'Application Number must be unique.',
@@ -168,6 +180,20 @@ class AssociationMembershipApplication(models.Model):
         for rec in self:
             if rec.pin_code and not rec.pin_code.strip().isdigit():
                 raise ValidationError(_('PIN Code must contain digits only.'))
+
+    @api.depends(
+        'payment_ids.state', 'payment_ids.total_amount',
+        'membership_type_id.membership_fee', 'membership_type_id.joining_fee',
+    )
+    def _compute_payment_totals(self):
+        for rec in self:
+            due = (rec.membership_type_id.membership_fee or 0.0) + (rec.membership_type_id.joining_fee or 0.0)
+            confirmed = rec.payment_ids.filtered(lambda p: p.state == 'confirmed')
+            paid = sum(confirmed.mapped('total_amount'))
+            rec.payment_count = len(rec.payment_ids)
+            rec.amount_due = due
+            rec.amount_paid = paid
+            rec.balance_due = max(due - paid, 0.0)
 
     @api.model
     def check_duplicate(self, email=None, mobile=None, id_proof_number=None,
@@ -220,6 +246,31 @@ class AssociationMembershipApplication(models.Model):
                 raise UserError(_('Only verified applications can be sent for payment.'))
             rec.state = 'payment_pending'
             rec.payment_status = 'pending'
+            if rec.amount_due > 0:
+                rec._create_payment_record()
+
+    def _create_payment_record(self):
+        """Create (or return the existing) draft/pending payment for this
+        application's amount due. Called automatically when an application
+        is sent for payment; also callable again as a safety net if that
+        payment was cancelled/failed and a fresh one is needed.
+        """
+        self.ensure_one()
+        open_payment = self.payment_ids.filtered(lambda p: p.state in ('draft', 'pending'))
+        if open_payment:
+            return open_payment[0]
+        mtype = self.membership_type_id
+        amount = (mtype.membership_fee or 0.0) + (mtype.joining_fee or 0.0)
+        tax_amount = round(amount * (mtype.tax_percentage or 0.0) / 100.0, 2) if mtype.tax_percentage else 0.0
+        return self.env['association.membership.payment'].create({
+            'application_id': self.id,
+            'payment_purpose': 'membership',
+            'currency_id': mtype.currency_id.id,
+            'amount': amount,
+            'tax_amount': tax_amount,
+            'payment_method': 'cash',
+            'state': 'draft',
+        })
 
     def action_mark_payment_received(self):
         for rec in self:
@@ -255,6 +306,17 @@ class AssociationMembershipApplication(models.Model):
     def action_reset_to_draft(self):
         for rec in self:
             rec.state = 'draft'
+
+    def action_view_payments(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'association_membership.action_association_membership_payment')
+        action['domain'] = [('application_id', '=', self.id)]
+        action['context'] = {
+            'default_application_id': self.id,
+            'default_payment_purpose': 'membership',
+        }
+        return action
 
     def _find_or_create_partner(self):
         self.ensure_one()

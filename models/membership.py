@@ -59,6 +59,10 @@ class AssociationMembership(models.Model):
     application_id = fields.Many2one('association.membership.application', string='Source Application', copy=False, index=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
 
+    # Payment (Phase 3)
+    payment_ids = fields.One2many('association.membership.payment', 'membership_id', string='Payments')
+    payment_count = fields.Integer(string='Payment Count', compute='_compute_payment_count')
+
     _membership_number_uniq = models.Constraint(
         'unique(name, company_id)',
         'Membership Number must be unique.',
@@ -75,6 +79,22 @@ class AssociationMembership(models.Model):
                 mtype = self.env['association.membership.type'].browse(vals['membership_type_id'])
                 vals['expiry_date'] = mtype.get_expiry_date(fields.Date.from_string(vals['start_date']))
         return super().create(vals_list)
+
+    @api.depends('payment_ids')
+    def _compute_payment_count(self):
+        for rec in self:
+            rec.payment_count = len(rec.payment_ids)
+
+    def action_view_payments(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'association_membership.action_association_membership_payment')
+        action['domain'] = [('membership_id', '=', self.id)]
+        action['context'] = {
+            'default_membership_id': self.id,
+            'default_payment_purpose': 'renewal',
+        }
+        return action
 
     def action_activate(self):
         for rec in self:
@@ -120,14 +140,29 @@ class AssociationMembership(models.Model):
         if self.state not in ('active', 'expired'):
             raise UserError(_('Only active or expired memberships can be renewed.'))
         new_start = self.expiry_date + relativedelta(days=1) if self.expiry_date else fields.Date.context_today(self)
+        renewal_amount = self.membership_type_id.renewal_fee or self.membership_type_id.membership_fee
         new_membership = self.create({
             'member_id': self.member_id.id,
             'membership_type_id': self.membership_type_id.id,
-            'fee': self.membership_type_id.renewal_fee or self.membership_type_id.membership_fee,
+            'fee': renewal_amount,
             'renewal_fee': self.membership_type_id.renewal_fee,
             'start_date': new_start,
             'previous_membership_id': self.id,
             'payment_status': 'pending',
         })
         self.renewal_membership_id = new_membership.id
+        if renewal_amount > 0:
+            mtype = self.membership_type_id
+            tax_amount = round(renewal_amount * (mtype.tax_percentage or 0.0) / 100.0, 2) if mtype.tax_percentage else 0.0
+            self.env['association.membership.payment'].create({
+                'membership_id': new_membership.id,
+                'payment_purpose': 'renewal',
+                'currency_id': mtype.currency_id.id,
+                'amount': renewal_amount,
+                'tax_amount': tax_amount,
+                'payment_method': 'cash',
+                'state': 'draft',
+            })
+        else:
+            new_membership.payment_status = 'paid'
         return new_membership

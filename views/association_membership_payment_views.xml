@@ -1,0 +1,141 @@
+<odoo>
+    <record id="view_association_membership_payment_list" model="ir.ui.view">
+        <field name="name">association.membership.payment.list</field>
+        <field name="model">association.membership.payment</field>
+        <field name="arch" type="xml">
+            <list string="Membership Payments"
+                  decoration-success="state == 'confirmed'"
+                  decoration-warning="state in ('draft', 'pending')"
+                  decoration-danger="state in ('failed', 'cancelled')"
+                  decoration-muted="state == 'refunded'">
+                <field name="name"/>
+                <field name="payment_date"/>
+                <field name="member_id"/>
+                <field name="application_id"/>
+                <field name="membership_id"/>
+                <field name="payment_purpose"/>
+                <field name="payment_method"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_association_membership_payment_form" model="ir.ui.view">
+        <field name="name">association.membership.payment.form</field>
+        <field name="model">association.membership.payment</field>
+        <field name="arch" type="xml">
+            <form string="Membership Payment">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="btn-primary" invisible="state not in ('draft', 'pending')"
+                            groups="association_membership.group_membership_manager"/>
+                    <button name="action_mark_failed" string="Mark Failed" type="object"
+                            invisible="state not in ('draft', 'pending')"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('confirmed', 'cancelled', 'refunded')"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ('failed', 'cancelled')"/>
+                    <button name="action_refund" string="Refund" type="object"
+                            invisible="state != 'confirmed'"
+                            groups="association_membership.group_membership_admin"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Linked To">
+                            <field name="application_id"/>
+                            <field name="membership_id"/>
+                            <field name="member_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                        </group>
+                        <group string="Payment">
+                            <field name="payment_purpose"/>
+                            <field name="payment_method"/>
+                            <field name="payment_date"/>
+                            <field name="reference_number"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Amount">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount"/>
+                            <field name="tax_amount"/>
+                            <field name="total_amount"/>
+                        </group>
+                        <group string="Confirmation" invisible="state not in ('confirmed', 'refunded')">
+                            <field name="confirmed_by" readonly="1"/>
+                            <field name="confirmed_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                        <page string="Online Gateway (Advanced)" groups="association_membership.group_membership_manager">
+                            <p class="text-muted">
+                                Reserved for a future online payment gateway (Razorpay/Stripe). Not used by
+                                manual/offline payments recorded today.
+                            </p>
+                            <group>
+                                <field name="gateway_provider"/>
+                                <field name="gateway_order_id"/>
+                                <field name="gateway_transaction_id"/>
+                                <field name="gateway_verified"/>
+                                <field name="gateway_response"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_association_membership_payment_search" model="ir.ui.view">
+        <field name="name">association.membership.payment.search</field>
+        <field name="model">association.membership.payment</field>
+        <field name="arch" type="xml">
+            <search string="Membership Payments">
+                <field name="name"/>
+                <field name="member_id"/>
+                <field name="application_id"/>
+                <field name="membership_id"/>
+                <field name="reference_number"/>
+                <filter string="Draft" name="state_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Pending" name="state_pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Confirmed" name="state_confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Failed" name="state_failed" domain="[('state', '=', 'failed')]"/>
+                <filter string="Refunded" name="state_refunded" domain="[('state', '=', 'refunded')]"/>
+                <separator/>
+                <filter string="Payment Date" name="filter_payment_date" date="payment_date"/>
+                <group>
+                    <filter string="Purpose" name="group_purpose" context="{'group_by': 'payment_purpose'}"/>
+                    <filter string="Payment Method" name="group_method" context="{'group_by': 'payment_method'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Payment Date" name="group_date" context="{'group_by': 'payment_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_association_membership_payment" model="ir.actions.act_window">
+        <field name="name">Membership Payments</field>
+        <field name="res_model">association.membership.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_state_draft': 1, 'search_default_state_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No membership payments yet
+            </p>
+            <p>
+                A payment is created automatically when an application is sent for payment, or when
+                a membership is renewed with a renewal fee due. Record the amount received and confirm it here.
+            </p>
+        </field>
+    </record>
+</odoo>

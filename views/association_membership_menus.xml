@@ -10,6 +10,9 @@
     <menuitem id="menu_association_memberships" name="Memberships"
               parent="menu_association_membership_root"
               action="action_association_membership" sequence="30"/>
+    <menuitem id="menu_association_membership_payments" name="Payments"
+              parent="menu_association_membership_root"
+              action="action_association_membership_payment" sequence="40"/>
 
     <menuitem id="menu_association_membership_config" name="Configuration"
               parent="menu_association_membership_root" sequence="90"
