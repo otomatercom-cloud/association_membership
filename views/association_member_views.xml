@@ -34,6 +34,8 @@
                             class="btn-secondary" invisible="has_portal_access"/>
                     <button name="action_print_card" string="Print Digital Card" type="object"
                             class="btn-secondary" invisible="not digital_card_enabled or status not in ('active', 'suspended', 'expired')"/>
+                    <button name="action_email_card" string="Email Digital Card" type="object"
+                            class="btn-secondary" invisible="not digital_card_enabled or status not in ('active', 'suspended', 'expired')"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,active,expired,suspended,cancelled"/>
                 </header>
                 <sheet>

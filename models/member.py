@@ -1,3 +1,4 @@
+import base64
 import secrets
 
 from odoo import _, api, fields, models
@@ -198,6 +199,46 @@ class AssociationMember(models.Model):
         self._ensure_card_token()
         return self.env.ref('association_membership.action_report_membership_card').report_action(self)
 
+    def action_email_card(self):
+        """Render the digital card as a PDF and email it to the member's
+        own contact as an attachment. Reuses the exact same report the
+        Print/portal-download buttons use, so the emailed PDF is always
+        identical to what staff would see if they printed it themselves.
+        """
+        self.ensure_one()
+        if not self.digital_card_enabled:
+            raise UserError(_('Digital card is not enabled for this membership type.'))
+        if self.status not in ('active', 'suspended', 'expired'):
+            raise UserError(_('A digital card can only be issued once the member has an active membership.'))
+        if not self.partner_id.email:
+            raise UserError(_('This member\'s contact has no email address on file.'))
+        self._ensure_card_token()
+
+        report = self.env.ref('association_membership.action_report_membership_card')
+        pdf_content, _report_format = report.sudo()._render_qweb_pdf(report, res_ids=[self.id])
+        attachment = self.env['ir.attachment'].create({
+            'name': 'Membership Card - %s.pdf' % (self.member_number or self.name),
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_content),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/pdf',
+        })
+        body_html = _(
+            '<p>Dear %(name)s,</p>'
+            '<p>Please find attached your Digital Membership Card (%(member_number)s).</p>'
+            '<p>You can also view it anytime, along with a QR verification code, from your member portal.</p>'
+        ) % {'name': self.name, 'member_number': self.member_number}
+        self.env['mail.mail'].sudo().create({
+            'subject': _('Your Digital Membership Card - %s') % self.member_number,
+            'body_html': body_html,
+            'email_to': self.partner_id.email,
+            'attachment_ids': [(6, 0, [attachment.id])],
+            'auto_delete': False,
+        }).send()
+        self.message_post(body=_('Digital membership card emailed to %s.') % self.partner_id.email)
+        return True
+
     @api.depends('membership_ids.state', 'membership_ids.expiry_date')
     def _compute_current_membership(self):
         for rec in self:
@@ -241,8 +282,8 @@ class AssociationMember(models.Model):
             [('login', '=', self.partner_id.email)], limit=1)
         if existing_user:
             portal_group = self.env.ref('base.group_portal')
-            if portal_group not in existing_user.groups_id:
-                existing_user.sudo().write({'groups_id': [(4, portal_group.id)]})
+            if portal_group not in existing_user.group_ids:
+                existing_user.sudo().write({'group_ids': [(4, portal_group.id)]})
             if existing_user.partner_id != self.partner_id:
                 raise UserError(_(
                     'A user already exists with the login %s but is linked to a different contact. '
@@ -256,7 +297,7 @@ class AssociationMember(models.Model):
             'login': self.partner_id.email,
             'email': self.partner_id.email,
             'partner_id': self.partner_id.id,
-            'groups_id': [(6, 0, [portal_group.id])],
+            'group_ids': [(6, 0, [portal_group.id])],
         })
         user.sudo().action_reset_password()
         self.user_id = user.id
