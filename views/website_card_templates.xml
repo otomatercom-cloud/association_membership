@@ -145,6 +145,9 @@
                 <div class="ms-bottom">
                     <div class="ms-member-number">
                         MEMBERSHIP<t t-if="card_year"> &#8226; <t t-esc="card_year"/></t>
+                        <t t-if="member.current_membership_id.expiry_date">
+                            <br/>VALID UNTIL <t t-esc="member.current_membership_id.expiry_date.strftime('%m/%Y')"/>
+                        </t>
                     </div>
                     <div class="ms-status" t-attf-style="background: {{status_bg}}33; border: 1px solid {{status_fg}}; color: {{status_fg}};">
                         &#9679; <t t-esc="status_label"/>
