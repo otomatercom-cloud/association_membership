@@ -9,7 +9,17 @@
             </t>
             <t t-else="">
                 <div class="o_ms_dashboard_header">
-                    <h2><i class="fa fa-id-card me-2"/>Membership Dashboard</h2>
+                    <div class="o_ms_header_left">
+                        <div class="o_ms_header_icon"><i class="fa fa-id-card"/></div>
+                        <div>
+                            <h2>Membership Dashboard</h2>
+                            <div class="o_ms_header_subtitle">Members, digital cards, applications and payments at a glance</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_header_badge">
+                        <i class="fa fa-users"/>
+                        <span t-esc="state.data.total_members"/> total members
+                    </div>
                 </div>
 
                 <div class="o_ms_stat_grid">
@@ -59,16 +69,16 @@
 
                 <div class="o_ms_row">
                     <div class="o_ms_col">
-                        <div class="o_ms_section_title">Digital Card Validity</div>
+                        <div class="o_ms_section_title"><i class="fa fa-id-card-o"/>Digital Card Validity</div>
                         <div class="o_ms_stat_grid o_ms_stat_grid_small">
-                            <div class="o_ms_stat_card o_ms_c_valid">
+                            <div class="o_ms_stat_card o_ms_c_valid" t-on-click="() => this.openMembers([])">
                                 <div class="o_ms_stat_icon"><i class="fa fa-id-card"/></div>
                                 <div class="o_ms_stat_body">
                                     <div class="o_ms_stat_value" t-esc="state.data.valid_card_members"/>
                                     <div class="o_ms_stat_label">Valid</div>
                                 </div>
                             </div>
-                            <div class="o_ms_stat_card o_ms_c_invalid">
+                            <div class="o_ms_stat_card o_ms_c_invalid" t-on-click="() => this.openMembers([])">
                                 <div class="o_ms_stat_icon"><i class="fa fa-id-card-o"/></div>
                                 <div class="o_ms_stat_body">
                                     <div class="o_ms_stat_value" t-esc="state.data.expired_card_members"/>
@@ -79,7 +89,7 @@
                     </div>
 
                     <div class="o_ms_col">
-                        <div class="o_ms_section_title">Applications</div>
+                        <div class="o_ms_section_title"><i class="fa fa-file-text-o"/>Applications</div>
                         <div class="o_ms_stat_grid o_ms_stat_grid_small">
                             <div class="o_ms_stat_card o_ms_c_pending"
                                  t-on-click="() => this.openApplications([['state','in',['submitted','under_verification','payment_pending']]])">
@@ -109,7 +119,7 @@
                     </div>
                 </div>
 
-                <div class="o_ms_section_title">Payments</div>
+                <div class="o_ms_section_title"><i class="fa fa-credit-card"/>Payments</div>
                 <div class="o_ms_stat_grid o_ms_stat_grid_small">
                     <div class="o_ms_stat_card o_ms_c_paid" t-on-click="() => this.openPayments([['state','=','confirmed']])">
                         <div class="o_ms_stat_icon"><i class="fa fa-check"/></div>
@@ -134,19 +144,25 @@
                     </div>
                 </div>
 
-                <div class="o_ms_revenue_row">
+                <div class="o_ms_revenue_row" style="margin-top: 20px;">
                     <div class="o_ms_revenue_card o_ms_revenue_collected">
-                        <div class="o_ms_revenue_label"><i class="fa fa-arrow-up me-1"/>Total Collected</div>
-                        <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_collected)"/>
+                        <div class="o_ms_revenue_icon"><i class="fa fa-arrow-up"/></div>
+                        <div>
+                            <div class="o_ms_revenue_label">Total Collected</div>
+                            <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_collected)"/>
+                        </div>
                     </div>
                     <div class="o_ms_revenue_card o_ms_revenue_pending">
-                        <div class="o_ms_revenue_label"><i class="fa fa-clock-o me-1"/>Pending Amount</div>
-                        <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_pending_amount)"/>
+                        <div class="o_ms_revenue_icon"><i class="fa fa-clock-o"/></div>
+                        <div>
+                            <div class="o_ms_revenue_label">Pending Amount</div>
+                            <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_pending_amount)"/>
+                        </div>
                     </div>
                 </div>
 
+                <div class="o_ms_section_title"><i class="fa fa-bar-chart"/>Members by Type</div>
                 <t t-if="state.data.membership_types.length">
-                    <div class="o_ms_section_title">Members by Type</div>
                     <div class="o_ms_type_list">
                         <t t-foreach="state.data.membership_types" t-as="mt" t-key="mt.name">
                             <div class="o_ms_type_row">
@@ -154,10 +170,15 @@
                                 <div class="o_ms_type_bar_wrap">
                                     <div class="o_ms_type_bar" t-attf-style="width: {{ this.typeBarWidth(mt.count) }};"/>
                                 </div>
-                                <div class="o_ms_type_count" t-esc="mt.count"/>
+                                <div class="o_ms_type_meta">
+                                    <strong t-esc="mt.count"/><span t-esc="this.typePercent(mt.count)"/>
+                                </div>
                             </div>
                         </t>
                     </div>
+                </t>
+                <t t-else="">
+                    <div class="o_ms_empty_state">No membership types with active members yet.</div>
                 </t>
             </t>
         </div>

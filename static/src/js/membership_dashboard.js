@@ -49,6 +49,11 @@ export class MembershipDashboard extends Component {
         return `${Math.max(2, (count / total) * 100).toFixed(1)}%`;
     }
 
+    typePercent(count) {
+        const total = this.state.data.total_members || 1;
+        return ` (${((count / total) * 100).toFixed(0)}%)`;
+    }
+
     openMembers(domain) {
         this.actionService.doAction({
             type: "ir.actions.act_window",

@@ -1,172 +1,266 @@
+// Professional SaaS-style admin dashboard: light neutral background,
+// white cards with a colored icon badge (not a fully-colored card),
+// soft shadows/borders, generous spacing - modelled on the common
+// Stripe/Linear-style admin dashboard look rather than solid gradient tiles.
 .o_ms_dashboard {
-    padding: 24px 28px;
-    max-width: 1280px;
+    padding: 28px 32px 48px;
+    max-width: 1320px;
+    background: #f6f7fb;
+    min-height: 100%;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
     .o_ms_dashboard_loading {
-        padding: 60px;
+        padding: 80px;
         text-align: center;
-        font-size: 16px;
+        font-size: 15px;
         color: #6b7280;
     }
 
+    // ---------- Header ----------
     .o_ms_dashboard_header {
-        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        .o_ms_header_left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .o_ms_header_icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #102a43, #0f766e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
 
         h2 {
-            font-weight: 800;
-            font-size: 24px;
-            color: #102a43;
+            font-weight: 700;
+            font-size: 21px;
+            color: #111827;
             margin: 0;
+            line-height: 1.25;
+        }
+
+        .o_ms_header_subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .o_ms_header_badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f766e;
+            background: #e6f6f4;
+            border: 1px solid #ccebe7;
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
     }
 
+    // ---------- Section headers ----------
+    .o_ms_section_title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #6b7280;
+        margin: 30px 0 12px;
+
+        &:first-child { margin-top: 0; }
+    }
+
+    // ---------- KPI grid / cards ----------
+    .o_ms_stat_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 16px;
+
+        &.o_ms_stat_grid_small {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+    }
+
+    .o_ms_stat_card {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 16px;
+        padding: 18px 20px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+        cursor: pointer;
+        transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        &:hover {
+            box-shadow: 0 8px 20px rgba(16, 24, 40, .08);
+            transform: translateY(-2px);
+            border-color: #e2e5eb;
+        }
+
+        .o_ms_stat_icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+
+        .o_ms_stat_value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1.15;
+        }
+
+        .o_ms_stat_label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-top: 2px;
+        }
+    }
+
+    // Icon-badge colors only - cards themselves stay white for a clean,
+    // professional look; the color lives in the small icon square.
+    .o_ms_c_total     .o_ms_stat_icon { background: #eaf0fb; color: #1d4ed8; }
+    .o_ms_c_active    .o_ms_stat_icon { background: #e7f8ee; color: #16a34a; }
+    .o_ms_c_expired   .o_ms_stat_icon { background: #fdeaea; color: #dc2626; }
+    .o_ms_c_suspended .o_ms_stat_icon { background: #fef3e2; color: #d97706; }
+    .o_ms_c_cancelled .o_ms_stat_icon { background: #f1f2f4; color: #6b7280; }
+    .o_ms_c_draft     .o_ms_stat_icon { background: #eef1f5; color: #475569; }
+
+    .o_ms_c_valid     .o_ms_stat_icon { background: #e6f6f4; color: #0f766e; }
+    .o_ms_c_invalid   .o_ms_stat_icon { background: #fdeaea; color: #dc2626; }
+
+    .o_ms_c_pending   .o_ms_stat_icon { background: #fef3e2; color: #d97706; }
+    .o_ms_c_approved  .o_ms_stat_icon { background: #e7f8ee; color: #16a34a; }
+    .o_ms_c_rejected  .o_ms_stat_icon { background: #f1f2f4; color: #6b7280; }
+
+    .o_ms_c_paid       .o_ms_stat_icon { background: #e7f8ee; color: #16a34a; }
+    .o_ms_c_pendingpay .o_ms_stat_icon { background: #fef3e2; color: #d97706; }
+    .o_ms_c_failedpay  .o_ms_stat_icon { background: #fdeaea; color: #dc2626; }
+
+    // ---------- Two-column row (Digital Card Validity / Applications) ----------
     .o_ms_row {
         display: flex;
         gap: 24px;
         flex-wrap: wrap;
 
         .o_ms_col {
-            flex: 1 1 320px;
+            flex: 1 1 340px;
             min-width: 300px;
         }
     }
 
-    .o_ms_section_title {
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        color: #6b7280;
-        margin: 24px 0 10px;
-    }
-
-    .o_ms_stat_grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 14px;
-
-        &.o_ms_stat_grid_small {
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        }
-    }
-
-    .o_ms_stat_card {
+    // ---------- Revenue cards ----------
+    .o_ms_revenue_row {
         display: flex;
-        align-items: center;
-        gap: 12px;
-        border-radius: 14px;
-        padding: 16px;
-        color: #fff;
-        cursor: pointer;
-        box-shadow: 0 6px 16px rgba(15, 23, 42, .10);
-        transition: transform .12s ease, box-shadow .12s ease;
+        gap: 16px;
+        flex-wrap: wrap;
 
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(15, 23, 42, .16);
+        .o_ms_revenue_card {
+            flex: 1 1 260px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid #eef0f4;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+
+            &::before {
+                content: "";
+                position: absolute;
+                left: 0; top: 0; bottom: 0;
+                width: 4px;
+            }
         }
 
-        .o_ms_stat_icon {
-            font-size: 22px;
-            width: 42px;
-            height: 42px;
+        .o_ms_revenue_icon {
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, .18);
+            font-size: 18px;
             flex-shrink: 0;
         }
 
-        .o_ms_stat_value {
-            font-size: 24px;
-            font-weight: 800;
-            line-height: 1.1;
-        }
-
-        .o_ms_stat_label {
-            font-size: 11px;
-            opacity: .9;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            margin-top: 2px;
-        }
-    }
-
-    // Color palette - keeps the same teal/navy family as the digital card,
-    // with clear status colors (green=good, amber=attention, red=problem).
-    .o_ms_c_total      { background: linear-gradient(135deg, #102a43, #155e75); }
-    .o_ms_c_active     { background: linear-gradient(135deg, #15803d, #22c55e); }
-    .o_ms_c_expired    { background: linear-gradient(135deg, #b91c1c, #ef4444); }
-    .o_ms_c_suspended  { background: linear-gradient(135deg, #b45309, #f59e0b); }
-    .o_ms_c_cancelled  { background: linear-gradient(135deg, #6b7280, #9ca3af); }
-    .o_ms_c_draft      { background: linear-gradient(135deg, #374151, #6b7280); }
-
-    .o_ms_c_valid      { background: linear-gradient(135deg, #0f766e, #14b8a6); }
-    .o_ms_c_invalid    { background: linear-gradient(135deg, #b91c1c, #ef4444); }
-
-    .o_ms_c_pending    { background: linear-gradient(135deg, #b45309, #f59e0b); cursor: pointer; }
-    .o_ms_c_approved   { background: linear-gradient(135deg, #15803d, #22c55e); cursor: pointer; }
-    .o_ms_c_rejected   { background: linear-gradient(135deg, #6b7280, #9ca3af); cursor: pointer; }
-
-    .o_ms_c_paid       { background: linear-gradient(135deg, #15803d, #22c55e); }
-    .o_ms_c_pendingpay { background: linear-gradient(135deg, #b45309, #f59e0b); }
-    .o_ms_c_failedpay  { background: linear-gradient(135deg, #b91c1c, #ef4444); }
-
-    .o_ms_revenue_row {
-        display: flex;
-        gap: 16px;
-        margin-top: 24px;
-        flex-wrap: wrap;
-
-        .o_ms_revenue_card {
-            flex: 1 1 220px;
-            border-radius: 16px;
-            padding: 20px 22px;
-            color: #fff;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, .12);
-        }
-
         .o_ms_revenue_collected {
-            background: linear-gradient(135deg, #102a43 0%, #155e75 52%, #0f766e 100%);
+            &::before { background: #0f766e; }
+            .o_ms_revenue_icon { background: #e6f6f4; color: #0f766e; }
         }
 
         .o_ms_revenue_pending {
-            background: linear-gradient(135deg, #7c2d12, #b45309);
+            &::before { background: #d97706; }
+            .o_ms_revenue_icon { background: #fef3e2; color: #d97706; }
         }
 
         .o_ms_revenue_label {
             font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: .5px;
-            opacity: .85;
-            margin-bottom: 6px;
+            letter-spacing: .04em;
+            color: #6b7280;
+            margin-bottom: 4px;
         }
 
         .o_ms_revenue_value {
-            font-size: 26px;
-            font-weight: 800;
+            font-size: 23px;
+            font-weight: 700;
+            color: #111827;
         }
     }
 
+    // ---------- Members-by-type list ----------
     .o_ms_type_list {
         background: #fff;
-        border-radius: 14px;
-        padding: 14px 18px;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+        border: 1px solid #eef0f4;
+        border-radius: 16px;
+        padding: 8px 22px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
     }
 
     .o_ms_type_row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 8px 0;
-        border-bottom: 1px solid #f1f5f9;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f2f3f6;
 
         &:last-child { border-bottom: none; }
 
         .o_ms_type_name {
-            width: 160px;
+            width: 170px;
             flex-shrink: 0;
             font-size: 13px;
             font-weight: 600;
@@ -178,24 +272,41 @@
 
         .o_ms_type_bar_wrap {
             flex: 1;
-            background: #eef2f7;
-            border-radius: 8px;
-            height: 10px;
+            background: #eef1f6;
+            border-radius: 10px;
+            height: 9px;
             overflow: hidden;
         }
 
         .o_ms_type_bar {
             height: 100%;
-            border-radius: 8px;
+            border-radius: 10px;
             background: linear-gradient(90deg, #102a43, #0f766e);
         }
 
-        .o_ms_type_count {
-            width: 34px;
+        .o_ms_type_meta {
+            width: 92px;
+            flex-shrink: 0;
             text-align: right;
-            font-size: 13px;
-            font-weight: 700;
-            color: #172033;
+            font-size: 12px;
+            color: #6b7280;
+
+            strong {
+                font-size: 13px;
+                font-weight: 700;
+                color: #172033;
+                margin-right: 4px;
+            }
         }
+    }
+
+    .o_ms_empty_state {
+        background: #fff;
+        border: 1px dashed #dfe3ea;
+        border-radius: 16px;
+        padding: 28px;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 13px;
     }
 }
