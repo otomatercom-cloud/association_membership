@@ -71,11 +71,7 @@
                     background: rgba(255,255,255,.15); flex-shrink: 0;
                 }
                 #ms_digital_card .ms-member-info { flex: 1; min-width: 0; }
-                #ms_digital_card .ms-member-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; word-break: break-word; }
-                #ms_digital_card .ms-member-type {
-                    display: inline-block; padding: 5px 11px; border-radius: 20px;
-                    background: rgba(255,255,255,.14); font-size: 10px; font-weight: 600; margin-bottom: 14px;
-                }
+                #ms_digital_card .ms-member-name { font-size: 22px; font-weight: 800; margin-bottom: 10px; word-break: break-word; }
                 #ms_digital_card .ms-info { display: grid; grid-template-columns: 100px 1fr; row-gap: 6px; font-size: 11px; }
                 #ms_digital_card .ms-label { color: rgba(255,255,255,.55); }
                 #ms_digital_card .ms-value { font-weight: 600; word-break: break-word; }
@@ -127,14 +123,9 @@
                     <div t-else="" class="ms-photo-placeholder"/>
                     <div class="ms-member-info">
                         <div class="ms-member-name" t-esc="member.name"/>
-                        <div class="ms-member-type" t-esc="(member.membership_type_id.name or 'MEMBER').upper()"/>
                         <div class="ms-info">
                             <div class="ms-label">Member ID</div>
                             <div class="ms-value" t-esc="member.member_number"/>
-                            <t t-if="member.iqama_number">
-                                <div class="ms-label">Iqama No.</div>
-                                <div class="ms-value" t-esc="member.iqama_number"/>
-                            </t>
                             <t t-if="member.nationality_id">
                                 <div class="ms-label">Nationality</div>
                                 <div class="ms-value" t-esc="member.nationality_id.name"/>
@@ -142,6 +133,10 @@
                             <t t-if="member.ksa_province">
                                 <div class="ms-label">KSA Province</div>
                                 <div class="ms-value" t-esc="member.ksa_province"/>
+                            </t>
+                            <t t-if="member.ksa_area">
+                                <div class="ms-label">KSA Area</div>
+                                <div class="ms-value" t-esc="member.ksa_area"/>
                             </t>
                         </div>
                     </div>
@@ -205,7 +200,7 @@
                 </div>
                 <div class="ms-detail" t-if="member.current_membership_id.expiry_date">
                     <small>Valid Until</small>
-                    <strong t-esc="member.current_membership_id.expiry_date" t-options="{'widget': 'date'}"/>
+                    <strong t-esc="member.current_membership_id.expiry_date.strftime('%m/%Y')"/>
                 </div>
             </div>
 
