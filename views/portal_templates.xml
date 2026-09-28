@@ -3,7 +3,12 @@
     <template id="portal_my_home_membership" name="Show Membership in Portal"
               inherit_id="portal.portal_my_home" customize_show="True" priority="50">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
-            <t t-if="membership_count" t-call="portal.portal_docs_entry">
+            <!-- Always shown for every portal user (not gated on having a
+                 membership record yet) - /my/membership itself shows a
+                 friendly "no membership linked" message when there isn't
+                 one, so someone without a member record still gets a clear
+                 next step instead of the tile just disappearing. -->
+            <t t-call="portal.portal_docs_entry">
                 <t t-set="icon" t-value="'/association_membership/static/src/img/membership_icon.png'"/>
                 <t t-set="title">Membership</t>
                 <t t-set="url" t-value="'/my/membership'"/>
