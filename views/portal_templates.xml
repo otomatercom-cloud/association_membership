@@ -4,10 +4,10 @@
               inherit_id="portal.portal_my_home" customize_show="True" priority="50">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-if="membership_count" t-call="portal.portal_docs_entry">
-                <t t-set="icon" t-value="'/base/static/img/main_partner-image.png'"/>
+                <t t-set="icon" t-value="'/association_membership/static/src/img/membership_icon.png'"/>
                 <t t-set="title">Membership</t>
                 <t t-set="url" t-value="'/my/membership'"/>
-                <t t-set="text">View your membership status, card and payment history.</t>
+                <t t-set="text">View your membership status, digital card and payment history.</t>
             </t>
         </xpath>
     </template>
