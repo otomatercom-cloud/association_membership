@@ -25,8 +25,15 @@ class AssociationMembershipDashboard(models.AbstractModel):
             member_status_counts[status] = Member.search_count([('status', '=', status)])
         total_members = sum(member_status_counts.values())
 
-        valid_card_members = Member.search_count([('card_status', '=', 'active')])
-        expired_card_members = Member.search_count([('card_status', '=', 'expired')])
+        # card_status is a compute field WITHOUT store=True (it depends on
+        # today's date via current_membership_id.expiry_date, so storing it
+        # would go stale between writes) - it can't be used in a search
+        # domain at all (real production error: "Cannot convert
+        # association.member.card_status to SQL because it is not stored").
+        # Count it in Python instead: mapped() computes it in one batch.
+        card_statuses = Member.search([]).mapped('card_status')
+        valid_card_members = card_statuses.count('active')
+        expired_card_members = card_statuses.count('expired')
 
         pending_applications = Application.search_count(
             [('state', 'in', ('submitted', 'under_verification', 'payment_pending'))])
