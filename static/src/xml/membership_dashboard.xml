@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="association_membership.MembershipDashboard">
+        <div class="o_ms_dashboard">
+            <t t-if="state.loading">
+                <div class="o_ms_dashboard_loading">
+                    <i class="fa fa-spinner fa-spin me-2"/>Loading dashboard...
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_ms_dashboard_header">
+                    <h2><i class="fa fa-id-card me-2"/>Membership Dashboard</h2>
+                </div>
+
+                <div class="o_ms_stat_grid">
+                    <div class="o_ms_stat_card o_ms_c_total" t-on-click="() => this.openMembers([])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-users"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.total_members"/>
+                            <div class="o_ms_stat_label">Total Members</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_active" t-on-click="() => this.openMembers([['status','=','active']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-check-circle"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.active_members"/>
+                            <div class="o_ms_stat_label">Active</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_expired" t-on-click="() => this.openMembers([['status','=','expired']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-exclamation-triangle"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.expired_members"/>
+                            <div class="o_ms_stat_label">Expired</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_suspended" t-on-click="() => this.openMembers([['status','=','suspended']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-pause-circle"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.suspended_members"/>
+                            <div class="o_ms_stat_label">Suspended</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_cancelled" t-on-click="() => this.openMembers([['status','=','cancelled']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-ban"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.cancelled_members"/>
+                            <div class="o_ms_stat_label">Cancelled</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_draft" t-on-click="() => this.openMembers([['status','=','draft']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-file-text-o"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.draft_members"/>
+                            <div class="o_ms_stat_label">Draft</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_ms_row">
+                    <div class="o_ms_col">
+                        <div class="o_ms_section_title">Digital Card Validity</div>
+                        <div class="o_ms_stat_grid o_ms_stat_grid_small">
+                            <div class="o_ms_stat_card o_ms_c_valid">
+                                <div class="o_ms_stat_icon"><i class="fa fa-id-card"/></div>
+                                <div class="o_ms_stat_body">
+                                    <div class="o_ms_stat_value" t-esc="state.data.valid_card_members"/>
+                                    <div class="o_ms_stat_label">Valid</div>
+                                </div>
+                            </div>
+                            <div class="o_ms_stat_card o_ms_c_invalid">
+                                <div class="o_ms_stat_icon"><i class="fa fa-id-card-o"/></div>
+                                <div class="o_ms_stat_body">
+                                    <div class="o_ms_stat_value" t-esc="state.data.expired_card_members"/>
+                                    <div class="o_ms_stat_label">Not Valid</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_ms_col">
+                        <div class="o_ms_section_title">Applications</div>
+                        <div class="o_ms_stat_grid o_ms_stat_grid_small">
+                            <div class="o_ms_stat_card o_ms_c_pending"
+                                 t-on-click="() => this.openApplications([['state','in',['submitted','under_verification','payment_pending']]])">
+                                <div class="o_ms_stat_icon"><i class="fa fa-hourglass-half"/></div>
+                                <div class="o_ms_stat_body">
+                                    <div class="o_ms_stat_value" t-esc="state.data.pending_applications"/>
+                                    <div class="o_ms_stat_label">Pending</div>
+                                </div>
+                            </div>
+                            <div class="o_ms_stat_card o_ms_c_approved"
+                                 t-on-click="() => this.openApplications([['state','=','approved']])">
+                                <div class="o_ms_stat_icon"><i class="fa fa-thumbs-up"/></div>
+                                <div class="o_ms_stat_body">
+                                    <div class="o_ms_stat_value" t-esc="state.data.approved_applications"/>
+                                    <div class="o_ms_stat_label">Approved</div>
+                                </div>
+                            </div>
+                            <div class="o_ms_stat_card o_ms_c_rejected"
+                                 t-on-click="() => this.openApplications([['state','=','rejected']])">
+                                <div class="o_ms_stat_icon"><i class="fa fa-thumbs-down"/></div>
+                                <div class="o_ms_stat_body">
+                                    <div class="o_ms_stat_value" t-esc="state.data.rejected_applications"/>
+                                    <div class="o_ms_stat_label">Rejected</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_ms_section_title">Payments</div>
+                <div class="o_ms_stat_grid o_ms_stat_grid_small">
+                    <div class="o_ms_stat_card o_ms_c_paid" t-on-click="() => this.openPayments([['state','=','confirmed']])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-check"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.paid_count"/>
+                            <div class="o_ms_stat_label">Paid</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_pendingpay" t-on-click="() => this.openPayments([['state','in',['draft','pending']]])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-clock-o"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.pending_payment_count"/>
+                            <div class="o_ms_stat_label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="o_ms_stat_card o_ms_c_failedpay" t-on-click="() => this.openPayments([['state','in',['failed','cancelled']]])">
+                        <div class="o_ms_stat_icon"><i class="fa fa-times"/></div>
+                        <div class="o_ms_stat_body">
+                            <div class="o_ms_stat_value" t-esc="state.data.failed_payment_count"/>
+                            <div class="o_ms_stat_label">Failed / Cancelled</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_ms_revenue_row">
+                    <div class="o_ms_revenue_card o_ms_revenue_collected">
+                        <div class="o_ms_revenue_label"><i class="fa fa-arrow-up me-1"/>Total Collected</div>
+                        <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_collected)"/>
+                    </div>
+                    <div class="o_ms_revenue_card o_ms_revenue_pending">
+                        <div class="o_ms_revenue_label"><i class="fa fa-clock-o me-1"/>Pending Amount</div>
+                        <div class="o_ms_revenue_value" t-esc="this.formatCurrency(state.data.total_pending_amount)"/>
+                    </div>
+                </div>
+
+                <t t-if="state.data.membership_types.length">
+                    <div class="o_ms_section_title">Members by Type</div>
+                    <div class="o_ms_type_list">
+                        <t t-foreach="state.data.membership_types" t-as="mt" t-key="mt.name">
+                            <div class="o_ms_type_row">
+                                <div class="o_ms_type_name" t-esc="mt.name"/>
+                                <div class="o_ms_type_bar_wrap">
+                                    <div class="o_ms_type_bar" t-attf-style="width: {{ this.typeBarWidth(mt.count) }};"/>
+                                </div>
+                                <div class="o_ms_type_count" t-esc="mt.count"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>

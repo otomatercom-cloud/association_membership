@@ -3,3 +3,4 @@ from . import membership_application
 from . import member
 from . import membership
 from . import membership_payment
+from . import dashboard

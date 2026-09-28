@@ -61,6 +61,13 @@ automatically the moment a membership is activated).
         'views/website_card_templates.xml',
         'views/portal_templates.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'association_membership/static/src/scss/membership_dashboard.scss',
+            'association_membership/static/src/js/membership_dashboard.js',
+            'association_membership/static/src/xml/membership_dashboard.xml',
+        ],
+    },
     'installable': True,
     'application': True,
     'auto_install': False,

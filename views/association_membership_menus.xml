@@ -1,6 +1,14 @@
 <odoo>
     <menuitem id="menu_association_membership_root" name="Membership" sequence="60"/>
 
+    <record id="action_association_membership_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">association_membership_dashboard</field>
+    </record>
+    <menuitem id="menu_association_membership_dashboard" name="Dashboard"
+              parent="menu_association_membership_root"
+              action="action_association_membership_dashboard" sequence="5"/>
+
     <menuitem id="menu_association_membership_applications" name="Applications"
               parent="menu_association_membership_root"
               action="action_association_membership_application" sequence="10"/>
